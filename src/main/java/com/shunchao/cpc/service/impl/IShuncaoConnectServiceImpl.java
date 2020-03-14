@@ -52,6 +52,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
     @Value(value = "${jeecg.path.cases.invalidation}")
     private String invalidation;
 
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token) throws Exception {

@@ -5,7 +5,9 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSONObject;
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
@@ -88,6 +90,45 @@ public class ShunchaoConnectCpcController {
 		}
 
 		return Result.ok("向CPC送案成功");
+	}
+
+	@GetMapping(value = "/getNotices")
+	public Result<?> getNotices(@RequestParam(name = "internalNumbers") String internalNumbers,@RequestParam(name = "token") String token, HttpServletRequest req) {
+
+		try {
+			String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
+			Database db = DatabaseBuilder.open(new File(dataPath));
+
+			Table table = db.getTable("DZSQ_KHD_TZS");
+			Table fjTable = db.getTable("DZSQ_KHD_WJFJ");
+			String[] internalNumberArray = internalNumbers.split(",");
+			for (String in : internalNumberArray) {
+				for (Row row : table) {
+					if (in.equals(row.getString("NEIBUBH"))) {
+						HashMap<String, Object> paramMap = new HashMap<>();
+						ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
+                        paramMap.put("attachmentName",row.getString("NEIBUBH"));
+						//通知书编号
+						String tongzhishubh = row.getString("TONGZHISBH");
+						/*for (Row r : fjTable) {
+							if (tongzhishubh.equals(r.getString("TONGZHISBH"))) {
+                                paramMap.put("attachmentSize",r.getString("FUJIANDX"));
+							}
+						}*/
+
+						paramMap.put("file", ZipUtil.zip(new File("D:\\notices\\" + tongzhishubh)));
+						HttpResponse execute = HttpRequest.post("http://localhost:8080/jeecg-boot" + "/notice/shunchaoDzsqKhdTzs/upload").
+								header("X-Access-Token", token).form(paramMap).execute();
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("获取官文失败", e);
+			return Result.error(500, "获取官文失败");
+		}
+
+		return Result.ok("获取官文成功");
 	}
 
      @PostMapping(value = "/upload")
