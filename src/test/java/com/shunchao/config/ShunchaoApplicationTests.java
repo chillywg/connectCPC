@@ -1,6 +1,11 @@
 package com.shunchao.config;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.ZipUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
+import cn.hutool.http.HttpUtil;
 import com.healthmarketscience.jackcess.*;
 import com.shunchao.cpc.util.UUIDGenerator;
 import org.junit.jupiter.api.Test;
@@ -133,6 +138,21 @@ class ShunchaoApplicationTests {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+    @Test
+    public void testUploadToCPC() {
+        HashMap<String, Object> paramMap = new HashMap<>();
+        //文件上传只需将参数中的键指定（默认file），值设为文件对象即可，对于使用者来说，文件上传与普通表单提交并无区别
+//        byte[] gzip = ZipUtil.gzip(new File("D:\\notices\\2020030228430943"));
+//        File file = new File(gzip);
+        paramMap.put("file", ZipUtil.zip(new File("D:\\notices\\2020030228430943")));
+//        paramMap.put("X-Access-Token", "");
+
+//        String result= HttpUtil.post("http://localhost:8080/jeecg-boot/sys/common/upload", paramMap);
+        HttpResponse execute = HttpRequest.post("http://localhost:8080/jeecg-boot" + "/notice/shunchaoDzsqKhdTzs/upload").
+                header("X-Access-Token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1ODQxNjAwMTMsInVzZXJuYW1lIjoid2VpZ2FuIn0.HN2z2HGt68ESUI2jbxYnTAqgtjffQOSdYFtmhoFhA1E").form(paramMap).execute();
+        System.out.println(execute);
 
     }
 }

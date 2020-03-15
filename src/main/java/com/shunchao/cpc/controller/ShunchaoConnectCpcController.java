@@ -5,6 +5,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
@@ -38,6 +39,10 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 public class ShunchaoConnectCpcController {
 	@Value(value = "${connecturl}")
 	private String connecturl;
+	@Value(value = "${jeecg.path.cases.basecpc}")
+	private String basecpc;
+	@Value(value = "${jeecg.path.cases.notices}")
+	private String notices;
 	@Autowired
 	private IShuncaoConnectService shuncaoConnectService;
 	/**
@@ -107,25 +112,60 @@ public class ShunchaoConnectCpcController {
 					if (in.equals(row.getString("NEIBUBH"))) {
 						HashMap<String, Object> paramMap = new HashMap<>();
 						ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
-                        paramMap.put("attachmentName",row.getString("NEIBUBH"));
 						//通知书编号
 						String tongzhishubh = row.getString("TONGZHISBH");
+						paramMap.put("tongzhisbh",tongzhishubh);
+						paramMap.put("tongzhisdm",row.getString("TONGZHISDM"));
+						paramMap.put("famingmc",row.getString("FAMINGMC"));
+						paramMap.put("fawenxlh",row.getString("FAWENXLH"));
+						paramMap.put("tongzhismc",row.getString("TONGZHISMC"));
+						paramMap.put("shenqingbh",row.getString("SHENQINGBH"));
+						paramMap.put("fawenrq", DateUtil.format((Date) row.get("FAWENRQ"), "yyyy-MM-dd"));
+						paramMap.put("dafurq", DateUtil.format((Date) row.get("DAFURQ"), "yyyy-MM-dd"));
+						paramMap.put("qianmingxx",row.getString("QIANMINGXX"));
+						paramMap.put("zhucedm",row.getString("ZHUCEDM"));
+						paramMap.put("xiazairq", DateUtil.format((Date) row.get("XIAZAIRQ"), "yyyy-MM-dd"));
+						paramMap.put("xiazaics", row.get("XIAZAICS"));
+						paramMap.put("zhuangtai",row.getString("ZHUANGTAI"));
+						paramMap.put("shifousc",row.getString("SHIFOUSC"));
+						paramMap.put("shifousc",row.getString("SHIFOUSC"));
+						paramMap.put("neibubh",row.getString("NEIBUBH"));
+						paramMap.put("gongbuh",row.getString("GongBuH"));
+						paramMap.put("gongbur", DateUtil.format((Date) row.get("GongBuR"), "yyyy-MM-dd"));
+						paramMap.put("jinrussr", DateUtil.format((Date) row.get("JinRuSSR"), "yyyy-MM-dd"));
+						paramMap.put("shoucinfnd",row.getString("ShouCiNFND"));
+						paramMap.put("waiguanflh",row.getString("WaiGuanFLH"));
+						paramMap.put("shouquanggh",row.getString("ShouQuanGGH"));
+						paramMap.put("shouquanggr",DateUtil.format((Date) row.get("ShouQuanGGR"), "yyyy-MM-dd"));
+						paramMap.put("daochuzt",row.getString("DaoChuZT"));
+						paramMap.put("qianzhangbj",row.getString("QIANZHANGBJ"));
 						/*for (Row r : fjTable) {
 							if (tongzhishubh.equals(r.getString("TONGZHISBH"))) {
                                 paramMap.put("attachmentSize",r.getString("FUJIANDX"));
 							}
 						}*/
 
-						paramMap.put("file", ZipUtil.zip(new File("D:\\notices\\" + tongzhishubh)));
-						HttpResponse execute = HttpRequest.post("http://localhost:8080/jeecg-boot" + "/notice/shunchaoDzsqKhdTzs/upload").
+						paramMap.put("file", ZipUtil.zip(new File(CpcPathInComputer.getCpcBinPathWindowsComputer() + File.separator + basecpc + File.separator + notices + File.separator + tongzhishubh)));
+						HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
 								header("X-Access-Token", token).form(paramMap).execute();
+						String body = execute.body();
+						JSONObject jsonObject = JSONObject.parseObject(body);
+						Boolean success = (Boolean) jsonObject.get("success");
+						Integer code = (Integer) jsonObject.get("code");
+						if (!success) {
+							if (40002 == code) {
+								log.info("通知书编号：" + tongzhishubh + " 对应的通知书系统已经获取，无需重复获取，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
+							} else {
+								log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
+							}
+						}
 					}
 				}
 			}
 
 		} catch (Exception e) {
-			log.error("获取官文失败", e);
-			return Result.error(500, "获取官文失败");
+			log.error("从CPC获取官文失败", e);
+			return Result.error(500, "从CPC获取官文失败");
 		}
 
 		return Result.ok("获取官文成功");
