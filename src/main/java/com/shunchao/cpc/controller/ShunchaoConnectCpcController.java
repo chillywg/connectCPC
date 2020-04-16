@@ -21,6 +21,7 @@ import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +70,8 @@ public class ShunchaoConnectCpcController {
 		return "12345";
 	}
 
-	@GetMapping(value = "/sendCase")
-	public Result<?> sendCase(HttpServletRequest req) {
+	@GetMapping(value = "/sendCase", produces = "application/jsonp; charset=utf-8")
+	public String sendCase(String callback, HttpServletRequest req) {
 		HashMap<String, Object> paramMap = new HashMap<>();
 		String id = req.getParameter("id");
 		String token = req.getParameter("token");
@@ -84,17 +85,37 @@ public class ShunchaoConnectCpcController {
 			JSONObject jsonObject = JSONObject.parseObject(body);
 			JSONObject resultObject = (JSONObject) jsonObject.get("result");
 			String caseInfoObject = resultObject.getString("shunchaoCaseInfo");
-			String attachmentListObject =  resultObject.getString("attachmentList");
+			String category = resultObject.getString("category");
+			String sendId = resultObject.getString("sendId");
+			String attachmentListObject = resultObject.getString("attachmentList");
 			ShunchaoCaseInfo shunchaoCaseInfo = JSONObject.parseObject(caseInfoObject, ShunchaoCaseInfo.class);
 			List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList = JSONObject.parseArray(attachmentListObject, ShunchaoAttachmentInfo.class);
-			shuncaoConnectService.sendCase(shunchaoCaseInfo, shunchaoAttachmentInfoList, token);
+			shuncaoConnectService.sendCase(shunchaoCaseInfo, shunchaoAttachmentInfoList, token, category);
+
+			HashMap<String, Object> param = new HashMap<>();
+			param.put("id", sendId);
+			HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/updateStatus").
+					header("X-Access-Token", token).form(param).execute();
+
 //			FileCopyUtils.copy();
 		} catch (Exception e) {
 			log.error("获取向CPC送案失败", e);
-			return Result.error(500, "获取向CPC送案失败");
+            if (StringUtils.isNotBlank(callback)) {
+                String string = JSONObject.toJSONString(Result.error(500, "获取向CPC送案失败"));
+                return callback + "(" + string + ")";
+            } else {
+                return JSONObject.toJSONString(Result.error(500, "获取向CPC送案失败"));
+            }
+
 		}
 
-		return Result.ok("向CPC送案成功");
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok("向CPC送案成功"));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok("向CPC送案成功"));
+		}
+
 	}
 
 	@GetMapping(value = "/getNotices")

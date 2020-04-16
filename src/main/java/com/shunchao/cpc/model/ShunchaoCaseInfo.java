@@ -31,6 +31,8 @@ public class ShunchaoCaseInfo {
 	private String caseName;
 	/**业务编号*/
 	private String businessNumber;
+	/**内部编号*/
+	private java.lang.String internalNumber;
 	/**专利号*/
 	private String patentNumber;
 	/**0:普通申请--发明 1:普通申请--新型 2:普通申请--外观 3:PCT申请--发明 4:PCT申请--新型 5:复审 6:无效*/
