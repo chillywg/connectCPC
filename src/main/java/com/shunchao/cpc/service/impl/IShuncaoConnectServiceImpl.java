@@ -13,6 +13,7 @@ import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.util.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +61,9 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
         Database db = DatabaseBuilder.open(new File(dataPath));
 
         Table table = db.getTable("DZSQ_KHD_SHENQINGXX");
-        String shenqingbh = "{"+(UUID.randomUUID().toString().toUpperCase())+"}";//(申请号4)、委内编号6、国际申请号7、
+        //此uuid既是申请编号，又是新申请的路径组成部分，务必保持一致，不然向CPC送案之后，无法通过签名，会报路径错误
+        String shenqingbhAndPath = UUID.randomUUID().toString();
+        String shenqingbh = "{"+(shenqingbhAndPath.toUpperCase())+"}";//(申请号4)、委内编号6、国际申请号7、
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/M/d");
         String date = DateUtils.getDate("yyyy/M/d");
         Date applicationDate = DateUtils.str2Date(date, simpleDateFormat);
@@ -101,7 +104,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
         }
 
         String cpcBinPathWindowsComputer = CpcPathInComputer.getCpcBinPathWindowsComputer();
-        String uuid1 = UUID.randomUUID().toString();
+        String uuid1 = shenqingbhAndPath;
         String uuid2 = UUID.randomUUID().toString();
         String filePath = "";
         //0:普通申请--发明 1:普通申请--新型 2:普通申请--外观 3:PCT申请--发明 4:PCT申请--新型 5:复审 6:无效 TODO
@@ -166,7 +169,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
             //相对路径
             String relative = filePath + File.separator + shunchaoAttachmentInfo.getTableCode() + File.separator + shunchaoAttachmentInfo.getTableCode() + attachmentSuffix;
             //保存路径
-            String savePath = file.getPath() + File.separator + shunchaoAttachmentInfo.getTableCode() + shunchaoAttachmentInfo.getAttachmentSuffix();
+            String savePath = file.getPath() + File.separator + shunchaoAttachmentInfo.getSysFileName();
 
             HashMap<String, Object> mapPara = new HashMap<>();
             mapPara.put("id", shunchaoAttachmentInfo.getId());
@@ -177,34 +180,36 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
             String message = parseObject.getString("message");
             byte[] bytes1 = Base64Utils.decodeFromString(message);
 
-
             FileCopyUtils.copy(bytes1, new BufferedOutputStream(new FileOutputStream(new File(savePath))));
 
-            Table wjtable = db.getTable("DZSQ_KHD_SQWJ");
-            Map<String, Object> mapWj = new HashMap<>();
-            mapWj.put("WENJIANMC", shunchaoAttachmentInfo.getAttachmentName());
-            mapWj.put("BIAOGEDM", shunchaoAttachmentInfo.getTableCode());
-            mapWj.put("WENJIANLX","0");
-            if (".xml".equals(attachmentSuffix)) {
+            if (StringUtils.isBlank(shunchaoAttachmentInfo.getParentId())) {
+
+                Table wjtable = db.getTable("DZSQ_KHD_SQWJ");
+                Map<String, Object> mapWj = new HashMap<>();
+                mapWj.put("WENJIANMC", shunchaoAttachmentInfo.getAttachmentName());
+                mapWj.put("BIAOGEDM", shunchaoAttachmentInfo.getTableCode());
+                mapWj.put("WENJIANLX", shunchaoAttachmentInfo.getFileType());//CPC文件类型 0:新申请 1:附加文件 2;中间文件(除附加文件外) 3:修改译文 4:修改文本
+            /*if (".xml".equals(attachmentSuffix)) {
                 mapWj.put("CHUANGJIANLX","0");//新建
             } else {
                 mapWj.put("CHUANGJIANLX","1");//导入
-            }
-            mapWj.put("CHUANGJIANRQ", new Date());
-            mapWj.put("CUNCHULJ", relative);
-            mapWj.put("WENJIANZT", "0");
-            mapWj.put("COUNTS", shunchaoAttachmentInfo.getCounts() == null ? 0 : Integer.parseInt(shunchaoAttachmentInfo.getCounts()));
-            mapWj.put("PAGES", shunchaoAttachmentInfo.getPages() == null ? 0 : Integer.parseInt(shunchaoAttachmentInfo.getPages()));
-            wjtable.addRowFromMap(mapWj);
+            }*/
+                mapWj.put("CHUANGJIANLX", shunchaoAttachmentInfo.getCpcCreateType());//CPC文件创建类型 0:新建 1:导入
+                mapWj.put("CHUANGJIANRQ", new Date());
+                mapWj.put("CUNCHULJ", relative);
+                mapWj.put("WENJIANZT", "0");
+                mapWj.put("COUNTS", shunchaoAttachmentInfo.getCounts() == null ? 0 : Integer.parseInt(shunchaoAttachmentInfo.getCounts()));
+                mapWj.put("PAGES", shunchaoAttachmentInfo.getPages() == null ? 0 : Integer.parseInt(shunchaoAttachmentInfo.getPages()));
+                wjtable.addRowFromMap(mapWj);
 
-            for (Row row : wjtable) {
-                if (row.getString("CUNCHULJ") != null && row.getString("CUNCHULJ").contains(uuid1) && row.getString("ANJUANBH") == null) {
-                    System.out.println("进入修改");
-                    row.put("ANJUANBH", anjuanbh);
-                    wjtable.updateRow(row);
+                for (Row row : wjtable) {
+                    if (row.getString("CUNCHULJ") != null && row.getString("CUNCHULJ").contains(uuid1) && row.getString("ANJUANBH") == null) {
+                        System.out.println("进入修改");
+                        row.put("ANJUANBH", anjuanbh);
+                        wjtable.updateRow(row);
+                    }
                 }
             }
-//            mapWj.put("ANJUANBH", "{"+UUID.randomUUID().toString().toUpperCase()+"}");
 
         }
     }

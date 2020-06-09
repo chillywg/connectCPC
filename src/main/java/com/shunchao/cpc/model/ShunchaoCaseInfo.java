@@ -98,4 +98,6 @@ public class ShunchaoCaseInfo {
 	private String changeBusiness;
 	/**申请文件副本*/
 	private String applyCopyDocuments;
+	/**委内编号*/
+	private java.lang.String weineibh;
 }

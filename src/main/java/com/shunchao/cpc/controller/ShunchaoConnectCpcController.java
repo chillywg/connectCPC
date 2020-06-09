@@ -1,6 +1,7 @@
 package com.shunchao.cpc.controller;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -9,6 +10,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
@@ -118,8 +120,19 @@ public class ShunchaoConnectCpcController {
 
 	}
 
-	@GetMapping(value = "/getNotices")
-	public Result<?> getNotices(@RequestParam(name = "internalNumbers") String internalNumbers,@RequestParam(name = "token") String token, HttpServletRequest req) {
+	@GetMapping(value = "/getNotices", produces = "application/jsonp; charset=utf-8")
+	public String getNotices(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
+
+		//todo 获取系统的所有案件的内部编号
+		String bodyInternal = HttpRequest.get(connecturl + "/caseinfo/shunchaoCaseInfo/queryAllInternalNumber").
+				header("X-Access-Token", token).execute().body();
+
+		JSONObject jsonObjectInternal = JSONObject.parseObject(bodyInternal);
+		JSONArray jsonArray = (JSONArray) jsonObjectInternal.get("result");
+		List<HashMap> hashMaps = JSONObject.parseArray(jsonArray.toJSONString(), HashMap.class);
+
+//		JSONObject.parseArray(resultObject);
+//		JSONObject.parseArray()
 
 		try {
 			String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
@@ -127,10 +140,12 @@ public class ShunchaoConnectCpcController {
 
 			Table table = db.getTable("DZSQ_KHD_TZS");
 			Table fjTable = db.getTable("DZSQ_KHD_WJFJ");
-			String[] internalNumberArray = internalNumbers.split(",");
-			for (String in : internalNumberArray) {
+//			String decode = URLDecoder.decode(internalNumbers,"UTF-8");
+//			String[] internalNumberArray = decode.split(",");
+			for (int i = 0; i < hashMaps.size(); i++) {
+				String internalNumber = hashMaps.get(i).get("internalNumber").toString();
 				for (Row row : table) {
-					if (in.equals(row.getString("NEIBUBH"))) {
+					if (internalNumber.equals(row.getString("NEIBUBH"))) {
 						HashMap<String, Object> paramMap = new HashMap<>();
 						ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
 						//通知书编号
@@ -178,18 +193,33 @@ public class ShunchaoConnectCpcController {
 								log.info("通知书编号：" + tongzhishubh + " 对应的通知书系统已经获取，无需重复获取，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
 							} else {
 								log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
+								return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
 							}
 						}
 					}
 				}
 			}
+//			for (String in : internalNumberArray) {
+//
+//			}
 
 		} catch (Exception e) {
 			log.error("从CPC获取官文失败", e);
-			return Result.error(500, "从CPC获取官文失败");
+//			return Result.error(500, "从CPC获取官文失败");
+			if (StringUtils.isNotBlank(callback)) {
+				String string = JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+				return callback + "(" + string + ")";
+			} else {
+				return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+			}
 		}
-
-		return Result.ok("获取官文成功");
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok("获取官文成功"));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok("获取官文成功"));
+		}
+//		return Result.ok("获取官文成功");
 	}
 
      @PostMapping(value = "/upload")
