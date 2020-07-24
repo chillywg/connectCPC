@@ -56,14 +56,14 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token,String category) throws Exception {
+    public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token, String category, String fillMode) throws Exception {
         String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
         Database db = DatabaseBuilder.open(new File(dataPath));
 
         Table table = db.getTable("DZSQ_KHD_SHENQINGXX");
         //此uuid既是申请编号，又是新申请的路径组成部分，务必保持一致，不然向CPC送案之后，无法通过签名，会报路径错误
         String shenqingbhAndPath = UUID.randomUUID().toString();
-        String shenqingbh = "{"+(shenqingbhAndPath.toUpperCase())+"}";//(申请号4)、委内编号6、国际申请号7、
+        String shenqingbh = "{" + (shenqingbhAndPath.toUpperCase()) + "}";//(申请号4)、委内编号6、国际申请号7、
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/M/d");
         String date = DateUtils.getDate("yyyy/M/d");
         Date applicationDate = DateUtils.str2Date(date, simpleDateFormat);
@@ -72,7 +72,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
         mapS.put("SHENQINGLX", shunchaoCaseInfo.getApplicationType());
         mapS.put("ZHUANLIMC", shunchaoCaseInfo.getCaseName());
         mapS.put("SHENQINGH", shunchaoCaseInfo.getPatentNumber());
-        mapS.put("ZHUANLIH", shunchaoCaseInfo.getPatentNumber());
+//        mapS.put("ZHUANLIH", shunchaoCaseInfo.getPatentNumber());
         mapS.put("SHENQINGR", shunchaoCaseInfo.getApplicationDate());
         mapS.put("CHUANGJIANRQ", new Date());
         mapS.put("ZHUANGTAI", "0");
@@ -80,12 +80,15 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
 //        table.addRow(shenqingbh,shunchaoCaseInfo.getApplicationType(),shunchaoCaseInfo.getCaseName(),shunchaoCaseInfo.getBusinessNumber(),shunchaoCaseInfo.getPatentNumber(),"","",applicationDate,new Date(),"0");
 
         Table ajTable = db.getTable("DZSQ_KHD_AJ");
-        String anjuanbh = "{"+UUID.randomUUID().toString().toUpperCase()+"}";
+        String anjuanbhAndPath = UUID.randomUUID().toString();
+        String anjuanbh = "{" + anjuanbhAndPath.toUpperCase() + "}";
         //案卷号2、案卷名称3、(填写模式4)、注册代码8、签名日期10、案卷包编号（ZIP）11、案卷包路径（ZIP）12、备注13、签名CN14、
 //        ajTable.addRow("{"+anjuanbh+"}","","","0","0","{"+shenqingbh+"}",new Date(),"","0","","","","","","内部编号");
         Map<String, Object> map = new HashMap<>();
         map.put("ANJUANBH", anjuanbh);
-        map.put("TIANXIEMS", "0");
+        map.put("ANJUANMC", shunchaoCaseInfo.getCaseName());
+//        map.put()
+        map.put("TIANXIEMS", fillMode);
         //0；新申请 1：中间件
         map.put("ANJUANLX", category);
         map.put("ANJUANZT", "0");
@@ -105,7 +108,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
 
         String cpcBinPathWindowsComputer = CpcPathInComputer.getCpcBinPathWindowsComputer();
         String uuid1 = shenqingbhAndPath;
-        String uuid2 = UUID.randomUUID().toString();
+        String uuid2 = anjuanbhAndPath;
         String filePath = "";
         //0:普通申请--发明 1:普通申请--新型 2:普通申请--外观 3:PCT申请--发明 4:PCT申请--新型 5:复审 6:无效 TODO
         if ("0".equals(shunchaoCaseInfo.getApplicationType())) {
@@ -127,7 +130,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
             } else {
                 filePath = File.separator + basecpc + File.separator + designs + File.separator + uuid1 + File.separator + "others" + File.separator + uuid2;
             }
-        }else if("3".equals(shunchaoCaseInfo.getApplicationType())){
+        } else if ("3".equals(shunchaoCaseInfo.getApplicationType())) {
             if ("0".equals(category)) {
                 filePath = File.separator + basecpc + File.separator + pCT_inventions + File.separator + uuid1 + File.separator + "new";
             } else {
@@ -167,7 +170,14 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
                 attachmentSuffix = ".doc";
             }
             //相对路径
-            String relative = filePath + File.separator + shunchaoAttachmentInfo.getTableCode() + File.separator + shunchaoAttachmentInfo.getTableCode() + attachmentSuffix;
+            String fileName = "";
+            if ("100104".equals(shunchaoAttachmentInfo.getTableCode())) {
+                fileName = shunchaoAttachmentInfo.getSysFileName().substring(0, shunchaoAttachmentInfo.getSysFileName().indexOf(".")) + ".doc";
+
+            } else {
+                fileName = shunchaoAttachmentInfo.getTableCode() + attachmentSuffix;
+            }
+            String relative = filePath + File.separator + shunchaoAttachmentInfo.getTableCode() + File.separator + fileName;
             //保存路径
             String savePath = file.getPath() + File.separator + shunchaoAttachmentInfo.getSysFileName();
 

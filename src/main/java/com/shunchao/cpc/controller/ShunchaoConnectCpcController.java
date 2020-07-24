@@ -77,27 +77,37 @@ public class ShunchaoConnectCpcController {
 		HashMap<String, Object> paramMap = new HashMap<>();
 		String id = req.getParameter("id");
 		String token = req.getParameter("token");
-		paramMap.put("id", id);
+		String[] split = id.split(",");
 
-//		String result = HttpUtil.get(connecturl + "/sendcpc/shunchaoSendCpcCase/queryCaseInfoById", paramMap);
-		String body = HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/queryCaseInfoById").
-				header("X-Access-Token", token).form(paramMap).execute().body();
+
+
+
+
+
 
 		try {
-			JSONObject jsonObject = JSONObject.parseObject(body);
-			JSONObject resultObject = (JSONObject) jsonObject.get("result");
-			String caseInfoObject = resultObject.getString("shunchaoCaseInfo");
-			String category = resultObject.getString("category");
-			String sendId = resultObject.getString("sendId");
-			String attachmentListObject = resultObject.getString("attachmentList");
-			ShunchaoCaseInfo shunchaoCaseInfo = JSONObject.parseObject(caseInfoObject, ShunchaoCaseInfo.class);
-			List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList = JSONObject.parseArray(attachmentListObject, ShunchaoAttachmentInfo.class);
-			shuncaoConnectService.sendCase(shunchaoCaseInfo, shunchaoAttachmentInfoList, token, category);
+			for (String sid : split) {
+				paramMap.put("id", sid);
+				//		String result = HttpUtil.get(connecturl + "/sendcpc/shunchaoSendCpcCase/queryCaseInfoById", paramMap);
+				String body = HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/queryCaseInfoById").
+						header("X-Access-Token", token).form(paramMap).execute().body();
+				JSONObject jsonObject = JSONObject.parseObject(body);
+				JSONObject resultObject = (JSONObject) jsonObject.get("result");
+				String caseInfoObject = resultObject.getString("shunchaoCaseInfo");
+				String category = resultObject.getString("category");
+				String fillMode = resultObject.getString("fillMode");
+				String sendId = resultObject.getString("sendId");
+				String attachmentListObject = resultObject.getString("attachmentList");
+				ShunchaoCaseInfo shunchaoCaseInfo = JSONObject.parseObject(caseInfoObject, ShunchaoCaseInfo.class);
+				List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList = JSONObject.parseArray(attachmentListObject, ShunchaoAttachmentInfo.class);
+				shuncaoConnectService.sendCase(shunchaoCaseInfo, shunchaoAttachmentInfoList, token, category, fillMode);
 
-			HashMap<String, Object> param = new HashMap<>();
-			param.put("id", sendId);
-			HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/updateStatus").
-					header("X-Access-Token", token).form(param).execute();
+				HashMap<String, Object> param = new HashMap<>();
+				param.put("id", sendId);
+				HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/updateStatus").
+						header("X-Access-Token", token).form(param).execute();
+			}
+
 
 //			FileCopyUtils.copy();
 		} catch (Exception e) {
@@ -145,7 +155,7 @@ public class ShunchaoConnectCpcController {
 			for (int i = 0; i < hashMaps.size(); i++) {
 				String internalNumber = hashMaps.get(i).get("internalNumber").toString();
 				for (Row row : table) {
-					if (internalNumber.equals(row.getString("NEIBUBH"))) {
+					if (StringUtils.isNotBlank(internalNumber) && internalNumber.equals(row.getString("NEIBUBH")) && "0".equals(row.getString("SHIFOUSC"))) {
 						HashMap<String, Object> paramMap = new HashMap<>();
 						ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
 						//通知书编号
@@ -163,7 +173,7 @@ public class ShunchaoConnectCpcController {
 						paramMap.put("xiazairq", DateUtil.format((Date) row.get("XIAZAIRQ"), "yyyy-MM-dd"));
 						paramMap.put("xiazaics", row.get("XIAZAICS"));
 						paramMap.put("zhuangtai",row.getString("ZHUANGTAI"));
-						paramMap.put("shifousc",row.getString("SHIFOUSC"));
+//						paramMap.put("shifousc",row.getString("SHIFOUSC"));
 						paramMap.put("shifousc",row.getString("SHIFOUSC"));
 						paramMap.put("neibubh",row.getString("NEIBUBH"));
 						paramMap.put("gongbuh",row.getString("GongBuH"));
@@ -180,20 +190,23 @@ public class ShunchaoConnectCpcController {
                                 paramMap.put("attachmentSize",r.getString("FUJIANDX"));
 							}
 						}*/
+						File file = new File(CpcPathInComputer.getCpcBinPathWindowsComputer() + File.separator + basecpc + File.separator + notices + File.separator + tongzhishubh);
 
-						paramMap.put("file", ZipUtil.zip(new File(CpcPathInComputer.getCpcBinPathWindowsComputer() + File.separator + basecpc + File.separator + notices + File.separator + tongzhishubh)));
-						HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
-								header("X-Access-Token", token).form(paramMap).execute();
-						String body = execute.body();
-						JSONObject jsonObject = JSONObject.parseObject(body);
-						Boolean success = (Boolean) jsonObject.get("success");
-						Integer code = (Integer) jsonObject.get("code");
-						if (!success) {
-							if (40002 == code) {
-								log.info("通知书编号：" + tongzhishubh + " 对应的通知书系统已经获取，无需重复获取，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
-							} else {
-								log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
-								return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+						if (file.exists()) {
+							paramMap.put("file", ZipUtil.zip(file));
+							HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+									header("X-Access-Token", token).form(paramMap).execute();
+							String body = execute.body();
+							JSONObject jsonObject = JSONObject.parseObject(body);
+							Boolean success = (Boolean) jsonObject.get("success");
+							Integer code = (Integer) jsonObject.get("code");
+							if (!success) {
+								if (40002 == code) {
+									log.info("通知书编号：" + tongzhishubh + " 对应的通知书系统已经获取，无需重复获取，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
+								} else {
+									log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
+									return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+								}
 							}
 						}
 					}

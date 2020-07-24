@@ -8,5 +8,5 @@ import java.io.FileNotFoundException;
 import java.util.List;
 
 public interface IShuncaoConnectService {
-    public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token,String category) throws Exception;
+    public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token, String category, String fillMode) throws Exception;
 }
