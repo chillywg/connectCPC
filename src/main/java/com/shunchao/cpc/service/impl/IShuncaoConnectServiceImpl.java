@@ -16,7 +16,7 @@ import com.shunchao.cpc.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.FileCopyUtils;
 
@@ -54,7 +54,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
     private String invalidation;
 
 
-    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
     @Override
     public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token, String category, String fillMode) throws Exception {
         String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();

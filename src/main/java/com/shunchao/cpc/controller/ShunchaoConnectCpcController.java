@@ -143,7 +143,7 @@ public class ShunchaoConnectCpcController {
 
 //		JSONObject.parseArray(resultObject);
 //		JSONObject.parseArray()
-
+		int count = 0;
 		try {
 			String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
 			Database db = DatabaseBuilder.open(new File(dataPath));
@@ -152,6 +152,8 @@ public class ShunchaoConnectCpcController {
 			Table fjTable = db.getTable("DZSQ_KHD_WJFJ");
 //			String decode = URLDecoder.decode(internalNumbers,"UTF-8");
 //			String[] internalNumberArray = decode.split(",");
+			//获取官文数量
+
 			for (int i = 0; i < hashMaps.size(); i++) {
 				String internalNumber = hashMaps.get(i).get("internalNumber").toString();
 				for (Row row : table) {
@@ -207,6 +209,8 @@ public class ShunchaoConnectCpcController {
 									log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + row.getString("FAMINGMC") + "，内部编号为：" + row.getString("NEIBUBH"));
 									return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
 								}
+							} else {
+								count++;
 							}
 						}
 					}
@@ -227,10 +231,10 @@ public class ShunchaoConnectCpcController {
 			}
 		}
 		if (StringUtils.isNotBlank(callback)) {
-			String string = JSONObject.toJSONString(Result.ok("获取官文成功"));
+			String string = JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
 			return callback + "(" + string + ")";
 		} else {
-			return JSONObject.toJSONString(Result.ok("获取官文成功"));
+			return JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
 		}
 //		return Result.ok("获取官文成功");
 	}
