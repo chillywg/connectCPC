@@ -101,3 +101,7 @@ jeecg :
       invalidation: Invalidation
       notices: notices
 connecturl: localhost:8080/jeecg-boot
+access_data: 
+  char_set: gb2312
+  user: 
+  password: 

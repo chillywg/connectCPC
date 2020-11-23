@@ -2,6 +2,10 @@ package com.shunchao.cpc.controller;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,11 +20,14 @@ import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
+import com.shunchao.config.AccessDBConfig;
 import com.shunchao.config.CpcPathInComputer;
 import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.service.IShuncaoConnectService;
+import com.shunchao.cpc.util.AccessDBUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.StringUtils;
@@ -220,6 +227,110 @@ public class ShunchaoConnectCpcController {
 //
 //			}
 
+		} catch (Exception e) {
+			log.error("从CPC获取官文失败", e);
+//			return Result.error(500, "从CPC获取官文失败");
+			if (StringUtils.isNotBlank(callback)) {
+				String string = JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+				return callback + "(" + string + ")";
+			} else {
+				return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+			}
+		}
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
+		}
+//		return Result.ok("获取官文成功");
+	}
+	
+	@GetMapping(value = "/getNotices2", produces = "application/jsonp; charset=utf-8")
+	public String getNotices2(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
+
+		//todo 获取系统的所有案件的内部编号
+		String bodyInternal = HttpRequest.get(connecturl + "/caseinfo/shunchaoCaseInfo/queryAllInternalNumber").
+				header("X-Access-Token", token).execute().body();
+
+		JSONObject jsonObjectInternal = JSONObject.parseObject(bodyInternal);
+		JSONArray jsonArray = (JSONArray) jsonObjectInternal.get("result");
+		List<HashMap> hashMaps = JSONObject.parseArray(jsonArray.toJSONString(), HashMap.class);
+
+//		JSONObject.parseArray(resultObject);
+//		JSONObject.parseArray()
+		int count = 0;
+		try {
+			/*String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
+			Properties prop = new Properties();
+	        prop.put("charSet", "gb2312");                //解决中文乱码
+	        String dbUr1 = "jdbc:ucanaccess://" + dataPath + ";openExclusive=false;ignoreCase=true"; // openExclusive=false;ignoreCase=true
+	        Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");*/
+			//获取官文数量
+			String[] column = {"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH",
+					"FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
+					"NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
+					"DaoChuZT", "QIANZHANGBJ"};
+			
+			String[] dateFormatColumn = {"FAWENRQ", "DAFURQ", "XIAZAIRQ", "GongBuR", "JinRuSSR", "ShouQuanGGR"};
+			
+			for (int i = 0; i < hashMaps.size(); i++) {
+				String sql = StringUtils.EMPTY;
+				
+				if (StringUtils.isBlank(sql)) {
+					Object internalNumber = hashMaps.get(i).get("internalNumber");
+					internalNumber = "C192C01219HReeLM";
+					if (internalNumber == null || StringUtils.isBlank(internalNumber.toString())) {
+						continue;
+					}else {
+						sql = "select * from DZSQ_KHD_TZS where NEIBUBH='" + internalNumber + "' and SHIFOUSC='0'";
+					}
+				}
+				
+				if (StringUtils.isBlank(sql)) {
+					continue;
+				}
+				/*Connection conn = DriverManager.getConnection(dbUr1, prop);
+	            Statement statement = conn.createStatement();
+	            ResultSet result = statement.executeQuery(sql);*/
+				Map<String, Object> paramMap = null;
+				List<Map<String, Object>> queryMapListBySql = AccessDBUtils.queryMapListBySql(sql, column);
+				
+	            for (Map<String, Object> queryMap : queryMapListBySql) {
+	            	paramMap = new HashMap<>();
+					ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
+	                for (String col : column) {
+	                	if (Arrays.asList(dateFormatColumn).contains(col)) {
+	                		paramMap.put(col.toLowerCase(), DateUtil.format((Date) queryMap.get(col), "yyyy-MM-dd"));
+	                	}else {
+	                		paramMap.put(col.toLowerCase(), queryMap.get(col));
+	                	}
+	                }
+	                String tongzhishubh = (String) queryMap.get("TONGZHISBH");
+	                File file = new File(CpcPathInComputer.getCpcBinPathWindowsComputer() + File.separator + basecpc + File.separator + notices + File.separator + tongzhishubh);
+	                
+					if (file.exists()) {
+						paramMap.put("file", ZipUtil.zip(file));
+						HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+								header("X-Access-Token", token).form(paramMap).execute();
+						String body = execute.body();
+						JSONObject jsonObject = JSONObject.parseObject(body);
+						Boolean success = (Boolean) jsonObject.get("success");
+						Integer code = (Integer) jsonObject.get("code");
+						if (!success) {
+							if (40002 == code) {
+								log.info("通知书编号：" + tongzhishubh + " 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
+							} else {
+								log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
+								return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+							}
+						} else {
+							count++;
+						}
+					}
+	            }    
+				String internalNumber = hashMaps.get(i).get("internalNumber").toString();
+			}
 		} catch (Exception e) {
 			log.error("从CPC获取官文失败", e);
 //			return Result.error(500, "从CPC获取官文失败");

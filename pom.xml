@@ -72,11 +72,11 @@
         </dependency>
 
         <!-- mybatis-plus -->
-        <!--<dependency>
+        <!-- <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatis-plus.version}</version>
-        </dependency>-->
+        </dependency> -->
         <!-- json -->
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -101,6 +101,18 @@
             <artifactId>commons-codec</artifactId>
             <version>1.14</version>
         </dependency>
+        
+        <!-- <dependency>
+		      <groupId>com.hxtt</groupId>
+		      <artifactId>access-jdbc</artifactId>
+		      <version>3.0</version>
+		</dependency> -->
+		
+		<dependency>
+		    <groupId>net.sf.ucanaccess</groupId>
+		    <artifactId>ucanaccess</artifactId>
+		    <version>4.0.4</version>
+		</dependency>
     </dependencies>
 
     <build>
