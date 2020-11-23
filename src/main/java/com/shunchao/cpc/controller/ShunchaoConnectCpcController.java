@@ -279,7 +279,6 @@ public class ShunchaoConnectCpcController {
 				
 				if (StringUtils.isBlank(sql)) {
 					Object internalNumber = hashMaps.get(i).get("internalNumber");
-					internalNumber = "C192C01219HReeLM";
 					if (internalNumber == null || StringUtils.isBlank(internalNumber.toString())) {
 						continue;
 					}else {
