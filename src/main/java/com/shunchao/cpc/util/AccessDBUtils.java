@@ -27,19 +27,19 @@ import lombok.extern.slf4j.Slf4j;
 public class AccessDBUtils {
 	@Autowired
 	private AccessDBConfig accessDBConfig1;
-	
+
 	private static AccessDBConfig accessDBConfig;
-	
+
 	private static Connection connection;
-	
+
     @PostConstruct
     public void init(){
     	accessDBConfig = this.accessDBConfig1;
     }
-    
-    
+
+
 	/**
-	 * 
+	 *
 	 * @Title:	getConnection
 	 * @Description:	获取Access数据库连接
 	 * @param:	@return
@@ -52,9 +52,9 @@ public class AccessDBUtils {
 		Connection conn = null;
 		String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
 		Properties prop = new Properties();
-        prop.put("charSet", accessDBConfig.charSet);   
-        prop.put("user", accessDBConfig.user); 
-        prop.put("password", accessDBConfig.password); 
+        prop.put("charSet", accessDBConfig.charSet);
+        prop.put("user", accessDBConfig.user);
+        prop.put("password", accessDBConfig.password);
         String dbUr = "jdbc:ucanaccess://" + dataPath + ";openExclusive=false;ignoreCase=true"; // openExclusive=false;ignoreCase=true
         try {
 			Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
@@ -66,16 +66,16 @@ public class AccessDBUtils {
         connection = conn;
         return conn;
 	}
-	
+
 	public static List<Map<String, Object>> queryMapListBySql (String sql, String[] column) throws Exception {
 		if (connection == null) {
 			Connection conn = getConnection();
-			
+
 			if (conn == null) {
 				throw new Exception ("无法获取Access数据库连接");
 			}
 		}
-		
+
 		Statement statement = connection.createStatement();
         ResultSet result = statement.executeQuery(sql);
 //        ResultSetMetaData metaData = result.getMetaData();
@@ -89,8 +89,8 @@ public class AccessDBUtils {
             }
             resultList.add(paramMap);
         }
-        
+
         return resultList;
 	}
-	
+
 }

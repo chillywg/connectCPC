@@ -28,8 +28,8 @@ public class CpcPathConfig {
 
             log.info(clientPath.substring(0,clientPath.lastIndexOf("\\")));
             log.info(clientPath);
-            System.out.println(clientPath.substring(0,clientPath.lastIndexOf("\\")));
-            System.out.println(clientPath);
+            /*System.out.println(clientPath.substring(0,clientPath.lastIndexOf("\\")));
+            System.out.println(clientPath);*/
         } catch (Exception e) {
             log.error("获取失败", e);
         }
