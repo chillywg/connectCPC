@@ -287,6 +287,20 @@ public class ShunchaoConnectCpcController {
 				StringBuilder sql = new StringBuilder("");
 				String patentNumber = mapList.get(i).get("patentNumber").toString();
 				String internalNumber = mapList.get(i).get("internalNumber").toString();
+				if(StringUtils.isNotBlank(patentNumber)){
+					sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
+							", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
+							", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ " +
+							"from DZSQ_KHD_SHENQINGXX SQXX LEFT JOIN DZSQ_KHD_TZS TZS ON SQXX.SHENQINGBH = TZS.SHENQINGBH WHERE SHIFOUSC = '0' " +
+							"AND SQXX.SHENQINGH = '" + patentNumber +"'");
+				}else {
+					sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
+							", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
+							", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ" +
+							" from DZSQ_KHD_TZS TZS WHERE SHIFOUSC = '0' AND NEIBUBH = '" + internalNumber + "'");
+				}
+				/*String patentNumber = mapList.get(i).get("patentNumber").toString();
+				String internalNumber = mapList.get(i).get("internalNumber").toString();
 				sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
 						", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
 						", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ " +
@@ -294,9 +308,10 @@ public class ShunchaoConnectCpcController {
 						"AND (SQXX.SHENQINGH = '" + patentNumber +"'" + " OR TZS.NEIBUBH = '" + internalNumber + "')");
 				if(StringUtils.isNotBlank(sb.toString())){
 					sql.append(" AND TONGZHISBH NOT IN " + sb.toString());
-				}
+				}*/
 				Map<String, Object> paramMap = null;
 				List<Map<String, Object>> queryMapListBySql = DBHelper.queryMapListBySql(conn, sql.toString(), column);
+				System.out.println("查询成功！" + i);
 	            for (Map<String, Object> queryMap : queryMapListBySql) {
 	            	paramMap = new HashMap<>();
 					ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
