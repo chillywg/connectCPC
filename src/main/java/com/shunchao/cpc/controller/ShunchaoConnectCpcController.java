@@ -136,7 +136,7 @@ public class ShunchaoConnectCpcController {
 
 	}
 
-	@GetMapping(value = "/getNotices", produces = "application/jsonp; charset=utf-8")
+	@GetMapping(value = "/getNoticesc", produces = "application/jsonp; charset=utf-8")
 	public String getNotices(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
 
 		//todo 获取系统的所有案件的内部编号
@@ -245,7 +245,7 @@ public class ShunchaoConnectCpcController {
 //		return Result.ok("获取官文成功");
 	}
 	
-	@GetMapping(value = "/getNoticesByPatentNo", produces = "application/jsonp; charset=utf-8")
+	@GetMapping(value = "/getNotices", produces = "application/jsonp; charset=utf-8")
 	public String getNoticesByPatentNo(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
 
 		//todo 获取系统的所有案件的内部编号
@@ -260,7 +260,7 @@ public class ShunchaoConnectCpcController {
         Connection conn = null;
 		try {
 			//获取官文数量
-			String[] column = {"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH",
+			String[] column = {"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH","SHENQINGH",
 					"FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
 					"NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
 					"DaoChuZT", "QIANZHANGBJ"};
@@ -288,10 +288,10 @@ public class ShunchaoConnectCpcController {
 				String patentNumber = mapList.get(i).get("patentNumber").toString();
 				String internalNumber = mapList.get(i).get("internalNumber").toString();
 				if(StringUtils.isNotBlank(patentNumber)){
-					sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
+					sql.append("select SQXX.SHENQINGH, TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
 							", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
 							", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ " +
-							"from DZSQ_KHD_SHENQINGXX SQXX LEFT JOIN DZSQ_KHD_TZS TZS ON SQXX.SHENQINGBH = TZS.SHENQINGBH WHERE SHIFOUSC = '0' " +
+							"from DZSQ_KHD_TZS TZS LEFT JOIN DZSQ_KHD_SHENQINGXX SQXX ON SQXX.SHENQINGBH = TZS.SHENQINGBH WHERE SHIFOUSC = '0' " +
 							"AND SQXX.SHENQINGH = '" + patentNumber +"'");
 				}else {
 					sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
@@ -311,7 +311,6 @@ public class ShunchaoConnectCpcController {
 				}*/
 				Map<String, Object> paramMap = null;
 				List<Map<String, Object>> queryMapListBySql = DBHelper.queryMapListBySql(conn, sql.toString(), column);
-				System.out.println("查询成功！" + i);
 	            for (Map<String, Object> queryMap : queryMapListBySql) {
 	            	paramMap = new HashMap<>();
 					ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
