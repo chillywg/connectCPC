@@ -260,10 +260,7 @@ public class ShunchaoConnectCpcController {
         Connection conn = null;
 		try {
 			//获取官文数量
-			String[] column = {"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH","SHENQINGH",
-					"FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
-					"NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
-					"DaoChuZT", "QIANZHANGBJ"};
+			String[] column;
 			String[] dateFormatColumn = {"FAWENRQ", "DAFURQ", "XIAZAIRQ", "GongBuR", "JinRuSSR", "ShouQuanGGR"};
 
             conn = DBHelper.getConnection();
@@ -293,11 +290,19 @@ public class ShunchaoConnectCpcController {
 							", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ " +
 							"from DZSQ_KHD_TZS TZS LEFT JOIN DZSQ_KHD_SHENQINGXX SQXX ON SQXX.SHENQINGBH = TZS.SHENQINGBH WHERE SHIFOUSC = '0' " +
 							"AND SQXX.SHENQINGH = '" + patentNumber +"'");
+					column = new String[]{"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH","SHENQINGH",
+							"FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
+							"NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
+							"DaoChuZT", "QIANZHANGBJ"};
 				}else {
 					sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
 							", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
 							", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ" +
 							" from DZSQ_KHD_TZS TZS WHERE SHIFOUSC = '0' AND NEIBUBH = '" + internalNumber + "'");
+					column = new String[]{"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH",
+							"FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
+							"NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
+							"DaoChuZT", "QIANZHANGBJ"};
 				}
 				/*String patentNumber = mapList.get(i).get("patentNumber").toString();
 				String internalNumber = mapList.get(i).get("internalNumber").toString();
