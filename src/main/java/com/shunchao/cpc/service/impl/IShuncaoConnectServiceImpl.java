@@ -1,37 +1,46 @@
 package com.shunchao.cpc.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import com.shunchao.config.CpcPathInComputer;
+import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.service.IShuncaoConnectService;
+import com.shunchao.cpc.util.DBHelper;
 import com.shunchao.cpc.util.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.FileCopyUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.sql.Connection;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
+import java.util.stream.Collectors;
 
+//import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
     @Value(value = "${connecturl}")
     private String connecturl;
@@ -52,7 +61,10 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
     private String reexamination;
     @Value(value = "${jeecg.path.cases.invalidation}")
     private String invalidation;
+    @Value(value = "${jeecg.path.cases.notices}")
+    private String notices;
 
+    private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
 
 //    @Transactional(rollbackFor = Exception.class)
     @Override
@@ -221,6 +233,158 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
                 }
             }
 
+        }
+    }
+
+    @Override
+    public String getNoticesByPatentNo(String callback, String token, HttpServletRequest req) {
+        //todo 获取系统的所有案件的内部编号
+        String bodyInternal = HttpRequest.get(connecturl + "/caseinfo/shunchaoCaseInfo/selectCaseInfoUsedCpc").
+                header("X-Access-Token", token).execute().body();
+
+        JSONObject jsonObjectCaseInfo = JSONObject.parseObject(bodyInternal);
+        JSONArray jsonArray = (JSONArray) jsonObjectCaseInfo.get("result");
+        List<HashMap> mapList = JSONObject.parseArray(jsonArray.toJSONString(), HashMap.class);
+        int count = 0;
+
+        Connection conn = null;
+        try {
+            //获取官文数量
+            String[] column;
+            String[] dateFormatColumn = {"FAWENRQ", "DAFURQ", "XIAZAIRQ", "GongBuR", "JinRuSSR", "ShouQuanGGR"};
+
+            conn = DBHelper.getConnection();
+            List<Map<String, Object>> queryMapListBySql = forkJoinPool.submit(new GetNoticesTask(0, mapList.size(), mapList, conn)).get();
+            List<Object> tongzhisbh = queryMapListBySql.stream().map(e -> e.get("TONGZHISBH")).collect(Collectors.toList());
+            log.info("tongzhisbh : " + tongzhisbh);
+
+            Map<String, Object> paramMap = null;
+            for (Map<String, Object> queryMap : queryMapListBySql) {
+                    paramMap = new HashMap<>();
+                    ShunchaoAttachmentInfo t = new ShunchaoAttachmentInfo();
+
+                    for (Map.Entry<String, Object> entry : queryMap.entrySet()) {
+                        if (Arrays.asList(dateFormatColumn).contains(entry.getKey())) {
+                            paramMap.put(entry.getKey().toLowerCase(), DateUtil.format((Date) entry.getValue(), "yyyy-MM-dd"));
+                        }else {
+                            paramMap.put(entry.getKey().toLowerCase(), entry.getValue());
+                        }
+                    }
+                    String tongzhishubh = (String) queryMap.get("TONGZHISBH");
+                    File file = new File(CpcPathInComputer.getCpcBinPathWindowsComputer() + File.separator + basecpc + File.separator + notices + File.separator + tongzhishubh);
+
+                    if (file.exists()) {
+                        paramMap.put("file", ZipUtil.zip(file));
+                        HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+                                header("X-Access-Token", token).form(paramMap).execute();
+                        String body = execute.body();
+                        JSONObject jsonObject = JSONObject.parseObject(body);
+                        Boolean success = (Boolean) jsonObject.get("success");
+                        Integer code = (Integer) jsonObject.get("code");
+                        if (!success) {
+                            if (40002 == code) {
+                                log.info("通知书编号：" + tongzhishubh + " 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
+                            } else {
+                                log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
+                                return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+                            }
+                        } else {
+                            count++;
+                        }
+                    }
+                }
+                //String internalNumber = mapList.get(i).get("internalNumber").toString();
+        } catch (Exception e) {
+            log.error("从CPC获取官文失败", e);
+            if (StringUtils.isNotBlank(callback)) {
+                String string = JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+                return callback + "(" + string + ")";
+            } else {
+                return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+            }
+        }
+        if (StringUtils.isNotBlank(callback)) {
+            String string = JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
+            return callback + "(" + string + ")";
+        } else {
+            return JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
+        }
+    }
+
+
+}
+
+class GetNoticesTask extends RecursiveTask<List<Map<String, Object>>> {
+    public GetNoticesTask (int begin, int end, List<HashMap> paramList, Connection conn) {
+        this.begin = begin;
+        this.end = end;
+        this.paramList = paramList;
+        this.conn = conn;
+    }
+
+    private static final  Integer  ADJUST_VALUE  =  10;
+    private int begin;
+    private int end;
+    List<HashMap> paramList;
+    Connection conn;
+    ConcurrentLinkedQueue<RuntimeException> exp = new ConcurrentLinkedQueue();
+    List<Map<String, Object>> datas = new ArrayList<>();
+    @Override
+    protected List<Map<String, Object>> compute() {
+        if(end - begin < ADJUST_VALUE){
+            String[] column = null;
+            StringBuilder sql = null;
+            List<Map<String, Object>> resultMaps = null;
+            for (HashMap param : paramList.subList(begin, end)) {
+                sql = new StringBuilder("");
+                String patentNumber = param.get("patentNumber").toString();
+                String internalNumber = param.get("internalNumber").toString();
+                if(StringUtils.isNotBlank(patentNumber)){
+                    sql.append("select SQXX.SHENQINGH, TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
+                            ", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
+                            ", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ " +
+                            "from DZSQ_KHD_TZS TZS LEFT JOIN DZSQ_KHD_SHENQINGXX SQXX ON SQXX.SHENQINGBH = TZS.SHENQINGBH WHERE SHIFOUSC = '0' " +
+                            "AND SQXX.SHENQINGH = '" + patentNumber +"'");
+                    column = new String[]{"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH","SHENQINGH",
+                            "FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
+                            "NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
+                            "DaoChuZT", "QIANZHANGBJ"};
+                }else {
+                    sql.append("select TZS.TONGZHISBH, TZS.TONGZHISDM, TZS.FAMINGMC, TZS.FAWENXLH, TZS.TONGZHISMC, TZS.SHENQINGBH, TZS.FAWENRQ" +
+                            ", TZS.DAFURQ,TZS.QIANMINGXX, TZS.ZHUCEDM, TZS.XIAZAIRQ, TZS.XIAZAICS, TZS.ZHUANGTAI, TZS.SHIFOUSC, TZS.NEIBUBH, TZS.GongBuH" +
+                            ", TZS.GongBuR,TZS.JinRuSSR,TZS.ShouCiNFND, TZS.WaiGuanFLH,TZS.ShouQuanGGH,TZS.ShouQuanGGR,TZS.DaoChuZT,TZS.QIANZHANGBJ" +
+                            " from DZSQ_KHD_TZS TZS WHERE SHIFOUSC = '0' AND NEIBUBH = '" + internalNumber + "'");
+                    column = new String[]{"TONGZHISBH", "TONGZHISDM", "FAMINGMC", "FAWENXLH", "TONGZHISMC", "SHENQINGBH",
+                            "FAWENRQ", "DAFURQ", "QIANMINGXX", "ZHUCEDM", "XIAZAIRQ", "XIAZAICS", "ZHUANGTAI", "SHIFOUSC",
+                            "NEIBUBH", "GongBuH", "GongBuR", "JinRuSSR", "ShouCiNFND", "WaiGuanFLH", "ShouQuanGGH", "ShouQuanGGR",
+                            "DaoChuZT", "QIANZHANGBJ"};
+                }
+
+                try {
+                    resultMaps = DBHelper.queryMapListBySql(conn, sql.toString(), column);
+                }catch (Exception e) {
+                    exp.add(new RuntimeException("专利号：" + patentNumber + "；内部编号：" + internalNumber + "从CPC获取官文失败",e));
+                    e.printStackTrace();
+                }
+
+                isError(exp); //异常抛出
+                datas.addAll(resultMaps);
+            }
+        }else {
+            int middle = (begin + end)/2;
+            GetNoticesTask leftTask = new GetNoticesTask(begin, middle, paramList, conn);
+            GetNoticesTask rightTask = new GetNoticesTask(middle, end, paramList, conn);
+            leftTask.fork();
+            rightTask.fork();
+            datas.addAll(leftTask.join());
+            datas.addAll(rightTask.join());
+        }
+        return datas;
+    }
+
+    public void isError(ConcurrentLinkedQueue<RuntimeException> exceptions){
+        if(!exceptions.isEmpty()) {
+            throw exceptions.poll();
         }
     }
 }

@@ -1,14 +1,5 @@
 package com.shunchao.cpc.controller;
 
-import java.io.*;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
@@ -24,17 +15,20 @@ import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.service.IShuncaoConnectService;
-import com.shunchao.cpc.util.AccessDBUtils;
-
 import com.shunchao.cpc.util.DBHelper;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.sql.Connection;
+import java.util.*;
 
 /**
  * @Description: 测试
@@ -367,6 +361,18 @@ public class ShunchaoConnectCpcController {
 			return JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
 		}
 //		return Result.ok("获取官文成功");
+	}
+
+	/**
+	* @Description : 获取CPC官文（走Fork join 框架）
+	* @Param [callback, token, req]
+	* @return:java.lang.String
+	* @Author:FuQiangCalendar
+	* @Date: 2021/5/8 12:09
+	*/
+	@GetMapping(value = "/getNoticesNew", produces = "application/jsonp; charset=utf-8")
+	public String getNoticesByPatentNoNew(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
+		return shuncaoConnectService.getNoticesByPatentNo(callback, token, req);
 	}
 
      @PostMapping(value = "/upload")
