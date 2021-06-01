@@ -331,7 +331,7 @@ class GetNoticesTask extends RecursiveTask<List<Map<String, Object>>> {
     List<Map<String, Object>> datas = new ArrayList<>();
     @Override
     protected List<Map<String, Object>> compute() {
-        if(end - begin < ADJUST_VALUE){
+        if(end - begin <= ADJUST_VALUE){
             String[] column = null;
             StringBuilder sql = null;
             List<Map<String, Object>> resultMaps = null;
