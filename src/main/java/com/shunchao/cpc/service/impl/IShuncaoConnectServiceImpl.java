@@ -183,7 +183,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
             }
             //相对路径
             String fileName = "";
-            if ("100104".equals(shunchaoAttachmentInfo.getTableCode())) {
+            if ("100104".equals(shunchaoAttachmentInfo.getTableCode()) || "100112".equals(shunchaoAttachmentInfo.getTableCode())) {
                 fileName = shunchaoAttachmentInfo.getSysFileName().substring(0, shunchaoAttachmentInfo.getSysFileName().indexOf(".")) + ".doc";
 
             } else {
