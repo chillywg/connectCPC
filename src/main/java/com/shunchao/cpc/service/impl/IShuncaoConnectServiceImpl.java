@@ -88,6 +88,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
         mapS.put("SHENQINGR", shunchaoCaseInfo.getApplicationDate());
         mapS.put("CHUANGJIANRQ", new Date());
         mapS.put("ZHUANGTAI", "0");
+        mapS.put("WEINEIBH", shunchaoCaseInfo.getWeineibh());
         table.addRowFromMap(mapS);
 //        table.addRow(shenqingbh,shunchaoCaseInfo.getApplicationType(),shunchaoCaseInfo.getCaseName(),shunchaoCaseInfo.getBusinessNumber(),shunchaoCaseInfo.getPatentNumber(),"","",applicationDate,new Date(),"0");
 
