@@ -3,11 +3,15 @@ package com.shunchao.cpc.service;
 
 import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
+import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface IShuncaoConnectService {
+
+    String getTrademarkAnnex(List<ShunchaoTrademarkAnnex> trademarkAnnexList, String token);
+
     public void sendCase(ShunchaoCaseInfo shunchaoCaseInfo, List<ShunchaoAttachmentInfo> shunchaoAttachmentInfoList, String token, String category, String fillMode) throws Exception;
 
     /**

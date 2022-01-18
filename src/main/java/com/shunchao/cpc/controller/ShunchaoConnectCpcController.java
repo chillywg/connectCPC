@@ -14,6 +14,7 @@ import com.shunchao.config.CpcPathInComputer;
 import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
+import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.util.DBHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,28 @@ public class ShunchaoConnectCpcController {
 	private String notices;
 	@Autowired
 	private IShuncaoConnectService shuncaoConnectService;
+
+
+	/**
+	 * 功能描述:加载商标局官网所需附件
+	 * 场景:
+	 * @Param: [trademarkAnnexList, request]
+	 * @Return: java.lang.String
+	 * @Author: Ironz
+	 * @Date: 2022/1/12 14:05
+	 */
+	@PostMapping(value = "/getTrademarkAnnex")
+	public Result<?> getTrademarkAnnex(@RequestBody List<ShunchaoTrademarkAnnex> trademarkAnnexList,HttpServletRequest request){
+		String token = request.getParameter("token");
+		String mark = shuncaoConnectService.getTrademarkAnnex(trademarkAnnexList,token);
+		if ("0".equals(mark)) {
+			return Result.ok(mark);
+		}else {
+			return Result.error(mark);
+		}
+	}
+
+
 	/**
 	 * 分页列表查询
 	 *

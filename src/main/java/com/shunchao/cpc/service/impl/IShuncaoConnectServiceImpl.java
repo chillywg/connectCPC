@@ -3,8 +3,10 @@ package com.shunchao.cpc.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ZipUtil;
+import cn.hutool.http.HttpException;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.healthmarketscience.jackcess.Database;
@@ -15,6 +17,7 @@ import com.shunchao.config.CpcPathInComputer;
 import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
+import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.util.DBHelper;
 import com.shunchao.cpc.util.DateUtils;
@@ -29,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,6 +69,57 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
     private String notices;
 
     private final static ForkJoinPool forkJoinPool = new ForkJoinPool();
+
+
+    /**
+     * 功能描述:加载商标局官网所需附件
+     * 场景:
+     * @Param: [trademarkAnnexList, token]
+     * @Return: java.lang.String
+     * @Author: Ironz
+     * @Date: 2022/1/12 14:05
+     */
+    public String getTrademarkAnnex(List<ShunchaoTrademarkAnnex> trademarkAnnexList,String token){
+        String answer = null;
+        if (trademarkAnnexList.size() > 0) {
+            //String exePath = System.getProperty("exe.path");
+            String exePath = "D:/connectttt/";
+            System.out.println("=======================根目录：=============="+exePath);
+            String execute = null;
+            String message = null;
+            try {
+                for (ShunchaoTrademarkAnnex trademarkAnnex:trademarkAnnexList){
+                    String savePath = exePath;
+                    savePath = savePath+trademarkAnnex.getRelativePath();
+                    File file = new File(savePath);
+                    if (!file.exists()) {
+                        file.mkdirs();
+                    }
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("id",trademarkAnnex.getId());
+                    HttpResponse httpResponse = HttpRequest.get(connecturl+"/trademark/shunchaoTrademarkAnnex/downloadAnnexByServices")
+                            .header("X-Access-Token",token).form(map).execute();
+                    execute = httpResponse.body();
+                    JSONObject j = JSON.parseObject(execute);
+                    message = j.getString("message");
+                    byte[] bytes = Base64Utils.decodeFromString(message);
+                    savePath = file.getPath()+File.separator+trademarkAnnex.getUploadName();
+                    try {
+                        FileCopyUtils.copy(bytes,new BufferedOutputStream(new FileOutputStream(new File(savePath))));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                answer = "0";//数据加载完成
+            } catch (HttpException e) {
+                answer = "1";//数据问题
+                e.printStackTrace();
+            }
+        }else {
+            answer = "2";//没有所需数据
+        }
+        return answer;
+    }
 
 //    @Transactional(rollbackFor = Exception.class)
     @Override
