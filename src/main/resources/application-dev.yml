@@ -101,6 +101,11 @@ jeecg :
       invalidation: Invalidation
       notices: notices
 connecturl: localhost:8080/jeecg-boot
+
+#商标网址信息
+trademark:
+  URL: http://wssq.sbj.cnipa.gov.cn:9080/tmsve/
+  PINWORD: 456123
 access_data:
   char_set: gb2312
   user:
