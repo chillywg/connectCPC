@@ -46,8 +46,8 @@ public class ShunchaoTrademarkTmsveController {
     @PostMapping(value = "/startUpTmsve")
     public void startUpTmsve(@RequestBody ShunchaoTrademarkApplicantProduct trademarkApplicantProduct, HttpServletRequest request) throws Exception{
 
-        //String rootPath = System.getProperty("exe.path");
-        String rootPath ="D:\\connectttt\\";
+        String rootPath = System.getProperty("exe.path");
+        //String rootPath ="D:\\connectttt\\";
         driver = SeleniumUtils.beforeM(driver,rootPath);
 
         //driver.navigate().to(url);
@@ -134,7 +134,7 @@ public class ShunchaoTrademarkTmsveController {
         driver.findElement(By.id("dialogBoxClose")).click();
 
         //申请人名称
-        driver.findElement(By.id("appCnName")).sendKeys(trademarkApplicantProduct.getApplicantOwnerChinesename());
+        driver.findElement(By.id("appCnName")).sendKeys(trademarkApplicantProduct.getApplicantName());
 
         //统一社会信用代码
         if (Objects.nonNull(trademarkApplicantProduct.getUnifiedSocialCreditcode())) {
@@ -308,15 +308,6 @@ public class ShunchaoTrademarkTmsveController {
             //申请人地址(英文)
             driver.findElement(By.id("appEnAddr")).sendKeys(trademarkApplicantProduct.getApplicationAddressEnglish());
 
-            //国内申请人联系地址
-            driver.findElement(By.cssSelector("#communicationAddr")).sendKeys(trademarkApplicantProduct.getApplicantContactAddress());
-
-            //邮政编码
-            driver.findElement(By.cssSelector("#communicationZip")).sendKeys(trademarkApplicantProduct.getPostalCode());
-
-            //国内申请人电子邮箱
-            driver.findElement(By.cssSelector("#appContactEmail")).sendKeys(trademarkApplicantProduct.getApplicantEmail());
-
             //申请人国内接收人名称
             driver.findElement(By.id("acceptPerson")).sendKeys(trademarkApplicantProduct.getApplicationMainlandRecipientname());
 
@@ -327,6 +318,16 @@ public class ShunchaoTrademarkTmsveController {
             driver.findElement(By.id("acceptZip")).sendKeys(trademarkApplicantProduct.getRecipientPostcode());
 
         }
+
+        //国内申请人联系地址
+        driver.findElement(By.cssSelector("#communicationAddr")).sendKeys(trademarkApplicantProduct.getApplicantContactAddress());
+
+        //邮政编码
+        driver.findElement(By.cssSelector("#communicationZip")).sendKeys(trademarkApplicantProduct.getPostalCode());
+
+        //国内申请人电子邮箱
+        driver.findElement(By.cssSelector("#appContactEmail")).sendKeys(trademarkApplicantProduct.getApplicantEmail());
+
 
         //下一步
         //int size = driver.findElements(By.cssSelector("td>label:last-child input")).size();
@@ -604,7 +605,7 @@ public class ShunchaoTrademarkTmsveController {
                             new Select(driver.findElement(By.id("appGjdq"))).selectByValue(g1);
 
                             //共有人名称中文
-                            driver.findElement(By.cssSelector("#nameCn")).sendKeys(trademarkCoApplicant.getApplicantOwnerChinesename());
+                            driver.findElement(By.cssSelector("#nameCn")).sendKeys(trademarkCoApplicant.getApplicantName());
 
                             if ("0".equals(trademarkCoApplicant.getApplicantType())) {
 
@@ -715,12 +716,14 @@ public class ShunchaoTrademarkTmsveController {
                                 Thread.sleep(6000);
                             } else {
                                 driver.switchTo().alert().dismiss();
-                                driver.switchTo().parentFrame();
+                                driver.switchTo().window(parentWindowsId);
+                                break;
                             }
                         }
                     }
                 }
             }
+            driver.switchTo().frame("myframe");
         }
 
         //下一步
@@ -815,11 +818,11 @@ public class ShunchaoTrademarkTmsveController {
                 }
             }
 
+            driver.switchTo().frame("myframe");
         }
 
 
         //下一步
-        driver.switchTo().frame("myframe");
         driver.findElements(By.cssSelector("td>label:last-child input")).get(5).click();
 
 
