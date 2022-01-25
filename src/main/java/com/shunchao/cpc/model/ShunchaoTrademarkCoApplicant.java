@@ -12,7 +12,7 @@ public class ShunchaoTrademarkCoApplicant {
     private String bookOwnerType;
 
     /*共有人名称中文*/
-    private String applicantOwnerChinesename;
+    private String applicantName;
 
     /*主体资格证明文件*/
     private String sba0027;

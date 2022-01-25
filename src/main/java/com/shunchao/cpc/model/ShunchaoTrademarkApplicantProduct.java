@@ -23,8 +23,8 @@ public class ShunchaoTrademarkApplicantProduct {
     /*代理委托书 路径*/
     private List<ShunchaoTrademarkPow> sba0023;
 
-    /*申请人名称*/
-    private String applicantOwnerChinesename;
+    /*申请人名称(中文)/共有人*/
+    private String applicantName;
 
     /*统一社会信用代码*/
     private String unifiedSocialCreditcode;
