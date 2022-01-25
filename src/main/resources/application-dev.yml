@@ -101,6 +101,7 @@ jeecg :
       invalidation: Invalidation
       notices: notices
 connecturl: localhost:8080/jeecg-boot
+#connecturl: 192.168.1.177/jeecg-boot
 
 #商标网址信息
 trademark:
