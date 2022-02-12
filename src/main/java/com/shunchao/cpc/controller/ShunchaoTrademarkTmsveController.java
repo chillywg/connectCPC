@@ -797,7 +797,8 @@ public class ShunchaoTrademarkTmsveController {
 
                         driver.findElement(By.cssSelector("#goodsCode")).clear();
 
-                        driver.findElement(By.cssSelector("#goodsCode")).sendKeys(trademarkProduct.getScode());
+                        //driver.findElement(By.cssSelector("#goodsCode")).sendKeys(trademarkProduct.getScode());
+                        driver.findElement(By.cssSelector("#goods")).sendKeys(trademarkProduct.getSname());
 
                         driver.findElement(By.cssSelector(".button2")).click();
                         Thread.sleep(1000);
