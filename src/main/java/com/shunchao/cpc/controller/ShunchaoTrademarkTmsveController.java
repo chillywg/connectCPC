@@ -715,6 +715,7 @@ public class ShunchaoTrademarkTmsveController {
                                 driver.switchTo().alert().accept();
                                 Thread.sleep(6000);
                             } else {
+                                Thread.sleep(4000);
                                 driver.switchTo().alert().dismiss();
                                 driver.switchTo().window(parentWindowsId);
                                 break;
@@ -795,7 +796,7 @@ public class ShunchaoTrademarkTmsveController {
                     for (ShunchaoTrademarkProduct trademarkProduct:trademarkApplicantProduct.getTrademarkProducts()){
                         a++;
 
-                        driver.findElement(By.cssSelector("#goodsCode")).clear();
+                        driver.findElement(By.cssSelector("#goods")).clear();
 
                         //driver.findElement(By.cssSelector("#goodsCode")).sendKeys(trademarkProduct.getScode());
                         driver.findElement(By.cssSelector("#goods")).sendKeys(trademarkProduct.getSname());
