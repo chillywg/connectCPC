@@ -60,7 +60,8 @@ public class ShunchaoConnectCpcController {
 	 * @Date: 2022/1/12 14:05
 	 */
 	@PostMapping(value = "/getTrademarkAnnex")
-	public Result<?> getTrademarkAnnex(@RequestBody List<ShunchaoTrademarkAnnex> trademarkAnnexList,HttpServletRequest request){
+	public Result<?> getTrademarkAnnex(@RequestBody List<ShunchaoTrademarkAnnex> trademarkAnnexList,HttpServletRequest request,HttpServletResponse response){
+		//response.setHeader("Access-Control-Allow-Origin", "http://user.duou.com");
 		String token = request.getParameter("token");
 		String mark = shuncaoConnectService.getTrademarkAnnex(trademarkAnnexList,token);
 		if ("0".equals(mark)) {

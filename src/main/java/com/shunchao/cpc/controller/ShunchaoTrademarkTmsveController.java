@@ -48,6 +48,7 @@ public class ShunchaoTrademarkTmsveController {
 
         String rootPath = System.getProperty("exe.path");
         //String rootPath ="D:\\connectttt\\";
+        System.out.println("开始提交程序：=====根目录====="+rootPath);
         driver = SeleniumUtils.beforeM(driver,rootPath);
 
         //driver.navigate().to(url);
@@ -56,17 +57,17 @@ public class ShunchaoTrademarkTmsveController {
         //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
         driver.findElement(By.cssSelector("#pinWord")).click();
         Thread.sleep(3000);
-        //driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();
-        driver.findElement(By.cssSelector(".pop-next")).click();
+        driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();
+        //driver.findElement(By.cssSelector(".pop-next")).click();
         Thread.sleep(3000);
-        //driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();
-        driver.findElement(By.cssSelector("input.pop-ok:nth-child(2)")).click();
+        driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();
+        //driver.findElement(By.cssSelector("input.pop-ok:nth-child(2)")).click();
 
         //菜单
-        //driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[1]/A")).click();
-        driver.findElement(By.cssSelector("#menu > ul:nth-child(1) > li:nth-child(1) > a:nth-child(1)")).click();
-        //driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[1]/UL/LI/A")).click();
-        driver.findElement(By.cssSelector("#menu > ul:nth-child(1) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)")).click();
+        driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[1]/A")).click();
+        //driver.findElement(By.cssSelector("#menu > ul:nth-child(1) > li:nth-child(1) > a:nth-child(1)")).click();
+        driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[1]/UL/LI/A")).click();
+        //driver.findElement(By.cssSelector("#menu > ul:nth-child(1) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)")).click();
 
         //System.out.println("=============当前页面源码============="+driver.getPageSource());
         //进入iframe
