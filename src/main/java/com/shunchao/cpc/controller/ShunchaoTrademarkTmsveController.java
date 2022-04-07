@@ -32,8 +32,8 @@ public class ShunchaoTrademarkTmsveController {
 
     @Value("${trademark.URL}")
     private String url;
-    @Value("${trademark.PINWORD}")
-    private String pinword;
+    /*@Value("${trademark.PINWORD}")
+    private String pinword;*/
 
     /**
      * 功能描述:商标注册
@@ -53,7 +53,8 @@ public class ShunchaoTrademarkTmsveController {
 
         //driver.navigate().to(url);
         driver.get(url);
-        driver.findElement(By.id("pin")).sendKeys(pinword);
+        //driver.findElement(By.id("pin")).sendKeys(pinword);
+        driver.findElement(By.id("pin")).sendKeys(trademarkApplicantProduct.getTrademarkUshieldPass());
         //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
         driver.findElement(By.cssSelector("#pinWord")).click();
         Thread.sleep(3000);
@@ -799,9 +800,14 @@ public class ShunchaoTrademarkTmsveController {
 
                         driver.findElement(By.cssSelector("#goods")).clear();
 
-                        //driver.findElement(By.cssSelector("#goodsCode")).sendKeys(trademarkProduct.getScode());
                         driver.findElement(By.cssSelector("#goods")).sendKeys(trademarkProduct.getSname());
 
+                        if (Objects.nonNull(trademarkProduct.getScode())) {
+
+                            driver.findElement(By.cssSelector("#goodsCode")).clear();
+
+                            driver.findElement(By.cssSelector("#goodsCode")).sendKeys(trademarkProduct.getScode());
+                        }
                         driver.findElement(By.cssSelector(".button2")).click();
                         Thread.sleep(1000);
 

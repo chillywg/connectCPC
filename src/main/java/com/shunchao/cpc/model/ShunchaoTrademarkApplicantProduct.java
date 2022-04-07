@@ -220,4 +220,7 @@ public class ShunchaoTrademarkApplicantProduct {
     /*国内申请人电子邮箱*/
     private String applicantEmail;
 
+    /*商标代理机构PIN码*/
+    private String trademarkUshieldPass;
+
 }
