@@ -221,6 +221,6 @@ public class ShunchaoTrademarkApplicantProduct {
     private String applicantEmail;
 
     /*商标代理机构PIN码*/
-    private String trademarkUshieldPass;
+    private String tmsvePin;
 
 }
