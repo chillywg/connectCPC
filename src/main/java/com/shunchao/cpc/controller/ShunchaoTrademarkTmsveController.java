@@ -55,14 +55,14 @@ public class ShunchaoTrademarkTmsveController {
             driver.findElement(By.id("pin")).sendKeys(trademarkApplicantProduct.getTmsvePin());
             //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
             driver.findElement(By.cssSelector("#pinWord")).click();
-            Thread.sleep(3000);
+            Thread.sleep(5000);
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[1]/div/input")).click();//开发本地电脑可以
-            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();
-            //driver.findElement(By.cssSelector(".pop-next")).click();
-            Thread.sleep(3000);
+            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
+            //driver.findElement(By.cssSelector(".pop-next")).click();//开发本地电脑可以
+            Thread.sleep(5000);
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[2]/div/input[2]")).click();//开发本地电脑可以
-            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();
-            //driver.findElement(By.cssSelector("input.pop-ok:nth-child(2)")).click();
+            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();//ie8可用
+            //driver.findElement(By.cssSelector("input.pop-ok:nth-child(2)")).click();//开发本地电脑可以
 
             //菜单
             driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[1]/A")).click();
@@ -813,8 +813,9 @@ public class ShunchaoTrademarkTmsveController {
             //=========商品===============
             if (trademarkApplicantProduct.getTrademarkProducts().size()>0) {
                 //点击添加商品/服务项目
-                driver.findElement(By.cssSelector("#Layer6 > div:nth-child(3) > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > " +
-                        "table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(1) > center:nth-child(14) > a:nth-child(1)")).click();
+                //driver.findElement(By.cssSelector("#Layer6 > div:nth-child(3) > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > " +
+                //        "table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(1) > center:nth-child(14) > a:nth-child(1)")).click();
+                driver.findElement(By.xpath("/html/body/div/div/div[2]/div/form/div[6]/div[3]/table/tbody/tr/td/table/tbody/tr[3]/td/center/a")).click();//ie8可用
 
                 String parentWindowId = driver.getWindowHandle();
                 Set<String> allWindowsId = driver.getWindowHandles();
