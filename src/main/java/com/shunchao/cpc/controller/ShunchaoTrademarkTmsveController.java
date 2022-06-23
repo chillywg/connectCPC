@@ -56,10 +56,20 @@ public class ShunchaoTrademarkTmsveController {
             //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
             driver.findElement(By.cssSelector("#pinWord")).click();
             Thread.sleep(5000);
+
+
+            String scrollTopJs = "document.querySelector('.pop-content').scrollTop=1000";
+            ((JavascriptExecutor) driver).executeScript(scrollTopJs);
+
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[1]/div/input")).click();//开发本地电脑可以
             driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
             //driver.findElement(By.cssSelector(".pop-next")).click();//开发本地电脑可以
             Thread.sleep(5000);
+
+            String scrollTopJs2 = "document.querySelector('.pop-content').scrollTop=3000";
+            ((JavascriptExecutor) driver).executeScript(scrollTopJs2);
+            Thread.sleep(5000);
+
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[2]/div/input[2]")).click();//开发本地电脑可以
             driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();//ie8可用
             //driver.findElement(By.cssSelector("input.pop-ok:nth-child(2)")).click();//开发本地电脑可以
@@ -828,21 +838,49 @@ public class ShunchaoTrademarkTmsveController {
                             a++;
 
                             driver.findElement(By.cssSelector("#goods")).clear();
+                            driver.findElement(By.cssSelector("#goodsCode")).clear();
 
                             driver.findElement(By.cssSelector("#goods")).sendKeys(trademarkProduct.getSname());
 
                             if (Objects.nonNull(trademarkProduct.getScode())) {
-
-                                driver.findElement(By.cssSelector("#goodsCode")).clear();
 
                                 driver.findElement(By.cssSelector("#goodsCode")).sendKeys(trademarkProduct.getScode());
                             }
                             driver.findElement(By.cssSelector(".button2")).click();
                             Thread.sleep(1000);
 
-                            driver.findElement(By.cssSelector("td.c3_0:nth-child(1) > input:nth-child(1)")).click();
+                            WebElement table = driver.findElement(By.cssSelector(".chart_list"));
+                            List<WebElement> tableTrList = table.findElements(By.tagName("tr"));
+                            int size = tableTrList.size()-3;
+                            //System.out.println("======table中tr个数："+tableTrList.size());
+                            if (size == 1) {
 
-                            driver.findElement(By.cssSelector(".chart_list > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > input:nth-child(1)")).click();
+                                driver.findElement(By.cssSelector("td.c3_0:nth-child(1) > input:nth-child(1)")).click();
+
+                                driver.findElement(By.cssSelector(".chart_list > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > input:nth-child(1)")).click();
+
+                            } else if (size == 0) {
+                                System.out.println("======个数为："+size+"个，所以直接跳过循环");
+                                continue;
+                            } else if (size > 1) {
+                                ii:
+                                for (int itr = 3;itr<tableTrList.size();itr++){
+                                    //System.out.println("=====循环从索引："+itr+"开始");
+                                    List<WebElement> tdList = tableTrList.get(itr).findElements(By.tagName("td"));
+                                    jj:
+                                    for (int itd=0;itd<tdList.size();itd++){
+                                        //System.out.println("======循环在："+itd+"处，td值为："+tdList.get(4).getText());
+                                        if (trademarkProduct.getSname().equals(tdList.get(4).getText())) {
+                                            //System.out.println("=======找到对应商品名称，在tr索引为："+itr+"处");
+                                            driver.findElement(By.cssSelector(".chart_list > tbody:nth-child(1) > tr:nth-child("+(itr+1)+") > td:nth-child(1) > input:nth-child(1)")).click();
+
+                                            driver.findElement(By.cssSelector(".chart_list > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > input:nth-child(1)")).click();
+
+                                            break ii;
+                                        }
+                                    }
+                                }
+                            }
 
                             Thread.sleep(1000);
                             driver.switchTo().alert().accept();
