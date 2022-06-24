@@ -43,6 +43,9 @@ public class ShunchaoTrademarkTmsveController {
     @PostMapping(value = "/startUpTmsve")
     public Result<?> startUpTmsve(@RequestBody ShunchaoTrademarkApplicantProduct trademarkApplicantProduct, HttpServletRequest request) {
         String mark = null;
+        String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
+        String htmlScrolltoJs = "parent.scrollTo(0,600)";
+
         try {
             String rootPath = System.getProperty("exe.path");
             //String rootPath ="D:\\connectttt\\";
@@ -57,17 +60,15 @@ public class ShunchaoTrademarkTmsveController {
             driver.findElement(By.cssSelector("#pinWord")).click();
             Thread.sleep(5000);
 
-
-            String scrollTopJs = "document.querySelector('.pop-content').scrollTop=1000";
-            ((JavascriptExecutor) driver).executeScript(scrollTopJs);
+            //移动弹框内滚动条
+            ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+1000);
 
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[1]/div/input")).click();//开发本地电脑可以
             driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
             //driver.findElement(By.cssSelector(".pop-next")).click();//开发本地电脑可以
             Thread.sleep(5000);
 
-            String scrollTopJs2 = "document.querySelector('.pop-content').scrollTop=3000";
-            ((JavascriptExecutor) driver).executeScript(scrollTopJs2);
+            ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+3000);
             Thread.sleep(5000);
 
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[2]/div/input[2]")).click();//开发本地电脑可以
@@ -141,13 +142,17 @@ public class ShunchaoTrademarkTmsveController {
             }
 
             //System.out.println("======上传成功后页面源码=========="+driver.getPageSource());
-        /*Actions act = new Actions(driver);
-        act.doubleClick(driver.findElement(By.id("dialogClose"))).build().perform();*/
+            /*Actions act = new Actions(driver);
+            act.doubleClick(driver.findElement(By.id("dialogClose"))).build().perform();*/
             driver.switchTo().parentFrame();//回到上一个iframe
             driver.findElement(By.id("dialogBoxClose")).click();
 
             //申请人名称
             driver.findElement(By.id("appCnName")).sendKeys(trademarkApplicantProduct.getApplicantName());
+
+            //移动页面滚动条
+            ((JavascriptExecutor) driver).executeScript(htmlScrolltoJs);
+            Thread.sleep(1000);
 
             //统一社会信用代码
             if (Objects.nonNull(trademarkApplicantProduct.getUnifiedSocialCreditcode())) {
@@ -159,7 +164,6 @@ public class ShunchaoTrademarkTmsveController {
 
             if ("0".equals(trademarkApplicantProduct.getBookOwnerType())&&
                     ("1".equals(trademarkApplicantProduct.getApplicantType()) || "0".equals(trademarkApplicantProduct.getApplicantType()))) {
-
 
                 if ("1".equals(trademarkApplicantProduct.getApplicantType())) {
                     //证件名称
@@ -385,6 +389,9 @@ public class ShunchaoTrademarkTmsveController {
                 driver.switchTo().parentFrame();
                 driver.findElement(By.cssSelector(".panel .panel-header .panel-tool a.panel-tool-close")).click();
 
+                ((JavascriptExecutor) driver).executeScript(htmlScrolltoJs);
+                Thread.sleep(1000);
+
                 if ("2".equals(trademarkApplicantProduct.getTrademarkType())) {
                     //集体成员名单
                     String jss = "document.querySelector('#menberListTr>td.td_2 .ke-container .ke-edit iframe')\n" +
@@ -589,6 +596,9 @@ public class ShunchaoTrademarkTmsveController {
             //商标名称
             driver.findElement(By.id("tmName")).sendKeys(trademarkApplicantProduct.getTrademarkName());
 
+            ((JavascriptExecutor) driver).executeScript(htmlScrolltoJs);
+            Thread.sleep(1000);
+
             //商标说明
             driver.findElement(By.id("tmDesignDeclare")).sendKeys(trademarkApplicantProduct.getTrademarkDescription());
 
@@ -765,6 +775,9 @@ public class ShunchaoTrademarkTmsveController {
                     }
                 }
                 driver.switchTo().frame("myframe");
+
+                ((JavascriptExecutor) driver).executeScript(htmlScrolltoJs);
+                Thread.sleep(1000);
             }
 
             //下一步
@@ -895,6 +908,9 @@ public class ShunchaoTrademarkTmsveController {
                 }
 
                 driver.switchTo().frame("myframe");
+
+                ((JavascriptExecutor) driver).executeScript(htmlScrolltoJs);
+                Thread.sleep(1000);
             }
 
 
@@ -920,6 +936,9 @@ public class ShunchaoTrademarkTmsveController {
             driver.findElement(By.cssSelector(".buttonhpb")).click();
             driver.switchTo().parentFrame();
             driver.findElement(By.cssSelector("#dialogBoxClose")).click();
+
+            ((JavascriptExecutor) driver).executeScript(htmlScrolltoJs);
+            Thread.sleep(1000);
 
             //黑白稿
             if (p) {
