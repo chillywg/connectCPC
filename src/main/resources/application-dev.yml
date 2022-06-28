@@ -100,9 +100,12 @@ jeecg :
       reexamination: Reexamination
       invalidation: Invalidation
       notices: notices
-connecturl: 121.36.230.204:8080/jeecg-boot
+#connecturl: 121.36.230.204:8080/jeecg-boot
+connecturl: user.duou.com/jeecg-boot
 #connecturl: localhost:8080/jeecg-boot
-#connecturl: 192.168.1.177/jeecg-boot
+#connecturl: 192.168.1.106:3000/jeecg-boot
+#connecturl: 192.168.1.177:8092/jeecg-boot
+#connecturl: 192.168.1.177:8089/jeecg-boot
 
 #商标网址信息
 trademark:
