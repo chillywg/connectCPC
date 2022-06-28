@@ -66,7 +66,7 @@ public class ShunchaoTrademarkApplicantProduct {
     /*传真（含地区号）*/
     private String faxInAreacode;
 
-    /*邮政编码*/
+    /*邮政编码（申请人）*/
     private String postalCode;
 
     /*申请人名称(英文)*/
@@ -222,5 +222,8 @@ public class ShunchaoTrademarkApplicantProduct {
 
     /*商标代理机构PIN码*/
     private String tmsvePin;
+
+    /*邮政编码（代理人）*/
+    private String agentPostalCode;
 
 }

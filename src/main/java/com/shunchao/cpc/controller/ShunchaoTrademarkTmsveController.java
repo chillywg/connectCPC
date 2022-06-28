@@ -201,10 +201,22 @@ public class ShunchaoTrademarkTmsveController {
                 driver.findElement(By.id("dialogBoxClose")).click();
 
 
-                //联系人
+                //邮政编码（申请人）
+                driver.findElement(By.id("appContactZip")).sendKeys(trademarkApplicantProduct.getPostalCode());
+
+                //国内申请人联系地址（代理人）
+                driver.findElement(By.cssSelector("#communicationAddr")).sendKeys(trademarkApplicantProduct.getApplicantContactAddress());
+
+                //邮政编码（代理人）
+                driver.findElement(By.cssSelector("#communicationZip")).sendKeys(trademarkApplicantProduct.getAgentPostalCode());
+
+                //国内申请人电子邮箱（代理人）
+                driver.findElement(By.cssSelector("#appContactEmail")).sendKeys(trademarkApplicantProduct.getApplicantEmail());
+
+                //联系人（代理人）
                 driver.findElement(By.id("appContactPerson")).sendKeys(trademarkApplicantProduct.getContactPerson());
 
-                //联系电话
+                //联系电话（代理人）
                 driver.findElement(By.id("appContactTel")).sendKeys(trademarkApplicantProduct.getContactNumber());
 
                 if (Objects.nonNull(trademarkApplicantProduct.getFaxInAreacode())) {
@@ -212,8 +224,6 @@ public class ShunchaoTrademarkTmsveController {
                     driver.findElement(By.id("appContactFax")).sendKeys(trademarkApplicantProduct.getFaxInAreacode());
                 }
 
-                //邮政编码
-                driver.findElement(By.id("appContactZip")).sendKeys(trademarkApplicantProduct.getPostalCode());
 
             }else {
 
@@ -344,15 +354,6 @@ public class ShunchaoTrademarkTmsveController {
                 driver.findElement(By.id("acceptZip")).sendKeys(trademarkApplicantProduct.getRecipientPostcode());
 
             }
-
-            //国内申请人联系地址
-            driver.findElement(By.cssSelector("#communicationAddr")).sendKeys(trademarkApplicantProduct.getApplicantContactAddress());
-
-            //邮政编码
-            driver.findElement(By.cssSelector("#communicationZip")).sendKeys(trademarkApplicantProduct.getPostalCode());
-
-            //国内申请人电子邮箱
-            driver.findElement(By.cssSelector("#appContactEmail")).sendKeys(trademarkApplicantProduct.getApplicantEmail());
 
 
             //下一步
