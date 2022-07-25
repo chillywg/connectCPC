@@ -226,4 +226,7 @@ public class ShunchaoTrademarkApplicantProduct {
     /*邮政编码（代理人）*/
     private String agentPostalCode;
 
+    /*是否着色图样*/
+    private String whetherColorPattern;
+
 }

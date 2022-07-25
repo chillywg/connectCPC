@@ -924,7 +924,7 @@ public class ShunchaoTrademarkTmsveController {
             //选择图样
             String path = rootPath;
             boolean p = false;
-            if ("1".equals(trademarkApplicantProduct.getWhetherColorCombination())) {
+            if ("1".equals(trademarkApplicantProduct.getWhetherColorCombination()) || "1".equals(trademarkApplicantProduct.getWhetherColorPattern())) {
                 path = path+trademarkApplicantProduct.getSba0019();
                 p = true;
             } else if ("0".equals(trademarkApplicantProduct.getWhetherColorCombination())) {
