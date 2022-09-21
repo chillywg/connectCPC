@@ -59,19 +59,19 @@ public class ShunchaoTmsveController {
 			JSONObject json1= JSONObject.parseObject(enterInfoAndCookie);
 			JSONObject resultObject = (JSONObject) json1.get("result");
 			JSONObject enterpriceAgencyInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
-			String cookie = resultObject.getString("cookie");
-//			String cookie =null;
-			if (StringUtils.isBlank(cookie)) {
+//			String cookie = resultObject.getString("cookie");
+			String cookie =null;
+//			if (StringUtils.isBlank(cookie)) {
 				try {
 					cookie =shunchaoTrademarkTmsveService.tmsveLogin(enterpriceAgencyInfo);
-					paramMap.put("cookie",cookie);
-					//保存cookie
-					HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/saveCookie").
-							header("X-Access-Token", token).form(paramMap).execute().body();
+//					paramMap.put("cookie",cookie);
+//					//保存cookie
+//					HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/saveCookie").
+//							header("X-Access-Token", token).form(paramMap).execute().body();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}
+//			}
 			try {
 				List<ShunchaoTrademarkTmsve> trademarkTmsveList=shunchaoTrademarkTmsveService.tmsveQueryDomesticApplication(domesticApplyDateBegin, domesticApplyDateEnd, enterpriceAgencyInfo, cookie);
 				HashMap<String, Object> map = new HashMap<>();
