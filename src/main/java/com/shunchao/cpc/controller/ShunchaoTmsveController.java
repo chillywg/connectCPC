@@ -42,7 +42,7 @@ public class ShunchaoTmsveController {
 
 
 	@GetMapping(value = "/excuteQueryDomestic")
-	public Result<?> excuteQueryDomestic(String domesticApplyDateBegin,String domesticApplyDateEnd,String enterpriceAgencyId,
+	public String excuteQueryDomestic(String callback,String domesticApplyDateBegin,String domesticApplyDateEnd,String enterpriceAgencyId,
 										 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 										 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 										 String registrationNumber,String applyNumber,String caseNumber, HttpServletRequest req){
@@ -60,6 +60,7 @@ public class ShunchaoTmsveController {
 			JSONObject resultObject = (JSONObject) json1.get("result");
 			JSONObject enterpriceAgencyInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
 			String cookie = resultObject.getString("cookie");
+//			String cookie =null;
 			if (StringUtils.isBlank(cookie)) {
 				try {
 					cookie =shunchaoTrademarkTmsveService.tmsveLogin(enterpriceAgencyInfo);
@@ -74,14 +75,11 @@ public class ShunchaoTmsveController {
 			try {
 				List<ShunchaoTrademarkTmsve> trademarkTmsveList=shunchaoTrademarkTmsveService.tmsveQueryDomesticApplication(domesticApplyDateBegin, domesticApplyDateEnd, enterpriceAgencyInfo, cookie);
 				HashMap<String, Object> map = new HashMap<>();
-				map.put("trademarkTmsveList",trademarkTmsveList);
+				map.put("trademarkString",JSON.toJSONString(trademarkTmsveList));
+				System.out.println(map.get("fw.appNum"));
 				//存入商标信息
-				HttpRequest.post(connecturl + "/trademark/shunchaoTrademarkTmsve/updateTrademarkinfo").
+				HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/updateTrademarkinfo").
 						header("X-Access-Token", token).form(map).execute().body();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
 				String tmsveList = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getTmsveList").
 						header("X-Access-Token", token).execute().body();
 				JSONObject tmsveJson= JSONObject.parseObject(tmsveList);
@@ -95,9 +93,9 @@ public class ShunchaoTmsveController {
 							String[] str = objectMap.get("tmsveDocId").toString().split(",");
 							arrayList = Arrays.asList(str);
 						}
-						Map<String, String> map = new HashMap<>();
-						map.put("fw.appNum", (String) objectMap.get("tmsveApplyNumber"));
-						List<Map<String, Object>> mapList = analyzing(ShunchaoTmsveAnnotation.class, map, "http://wssq.sbj.cnipa.gov.cn:9080/tmsve/fwcx_getFwCondition.xhtml", cookie);
+						Map<String, String> map1 = new HashMap<>();
+						map1.put("fw.appNum", (String) objectMap.get("tmsveApplyNumber"));
+						List<Map<String, Object>> mapList = analyzing(ShunchaoTmsveAnnotation.class, map1, "http://wssq.sbj.cnipa.gov.cn:9080/tmsve/fwcx_getFwCondition.xhtml", cookie);
 						log.info("商标官文-数据库数据：{}条，html抓取数据：{}条", arrayList.size(), mapList.size());
 						List<String> mapListString = mapList.stream().map(i -> (String) i.get("tmsveDocId")).collect(Collectors.toList());
 						mapListString.removeAll(arrayList);
@@ -111,6 +109,7 @@ public class ShunchaoTmsveController {
 								shunchaoTrademarkTmsve.setTmsveRelativepath(mapPath.get("path"));
 								shunchaoTrademarkTmsveList.add(shunchaoTrademarkTmsve);
 							} catch (Exception e) {
+								e.printStackTrace();
 								log.error("商标官文-下载文件失败或入库失败：{},申请号：{},docId:{}", e, map.get("fw.appNum"), s);
 							}
 						}
@@ -118,21 +117,38 @@ public class ShunchaoTmsveController {
 						log.error("商标官文-获取商标数据出现失败：{}", e);
 					}
 				}
-				HashMap<String, Object> map = new HashMap<>();
-				map.put("shunchaoTrademarkTmsveList",shunchaoTrademarkTmsveList);
+				HashMap<String, Object> map2 = new HashMap<>();
+				map2.put("shunchaoTrademarkString",JSON.toJSONString(shunchaoTrademarkTmsveList));
 				//存入商标信息
-				HttpRequest.post(connecturl + "/trademark/shunchaoTrademarkTmsve/saveShunchaoTrademark").
-						header("X-Access-Token", token).form(map).execute().body();
-			} catch (Exception e) {
-				e.printStackTrace();
+				HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/saveShunchaoTrademark").
+						header("X-Access-Token", token).form(map2).execute().body();
+			} catch (IOException e) {
+				log.error("商标官文下载失败", e);
+				if (StringUtils.isNotBlank(callback)) {
+					String string = JSONObject.toJSONString(Result.error(500, "商标官文下载失败"));
+					return callback + "(" + string + ")";
+				} else {
+					return JSONObject.toJSONString(Result.error(500, "商标官文下载失败"));
+				}
 			}
 		}
-//		String bodyInternal = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/gettmsveList").
-//				header("X-Access-Token", token).execute().body();
-//
-//		JSONObject jsonExcuteQuery = JSONObject.parseObject(bodyInternal);
+		HashMap<String, Object> map3 = new HashMap<>();
+		map3.put("domesticApplyDateBegin", domesticApplyDateBegin);
+		map3.put("domesticApplyDateEnd", domesticApplyDateEnd);
+		map3.put("enterpriceAgencyId", enterpriceAgencyId);
+		map3.put("pageNo", pageNo);
+		map3.put("pageSize", pageSize);
+		map3.put("registrationNumber", registrationNumber);
+		map3.put("applyNumber", applyNumber);
+		map3.put("caseNumber", caseNumber);
+		String tmsveList = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/findList").
+				header("X-Access-Token", token).form(map3).execute().body();
 
-		return Result.ok();
+		if (StringUtils.isNotBlank(callback)) {
+			return callback + "(" + tmsveList + ")";
+		} else {
+			return tmsveList;
+		}
 	}
 
 	/**

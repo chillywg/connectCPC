@@ -206,7 +206,7 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
     }
     public Map<String, String> downloadpdf(String cookieId, String docId, String applyNumber, String token) throws IOException {
         Map<String, String> tmsDocMap = new HashMap<>();
-        tmsDocMap.put("_", "1649640696669");
+        tmsDocMap.put("_", System.currentTimeMillis()+"");
         //tmsDocMap.put("docId","B1021TMZC00000051884945JFTZ0100012");
         tmsDocMap.put("docId", docId);
         tmsDocMap.put("docNo", "1");
@@ -228,7 +228,7 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
             HashMap<String, Object> paramMap = new HashMap<>();
             paramMap.put("docId", docId);
             paramMap.put("applyNumber", applyNumber);
-            paramMap.put("file", file);
+            paramMap.put("file", file2);
             HttpResponse execute = HttpRequest.post(connecturl + "/trademark/shunchaoTrademarkTmsve/upload").
                     header("X-Access-Token", token).form(paramMap).execute();
             String body = execute.body();
