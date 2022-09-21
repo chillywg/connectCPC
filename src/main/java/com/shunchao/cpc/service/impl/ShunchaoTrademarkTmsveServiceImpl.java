@@ -165,13 +165,13 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
             tmsMap3.put("wd.date2", domesticApplyDateEnd);
             tmsMap3.put("wd.appNum", "");
             //tmsMap3.put("wd.appName", "");
-            tmsMap3.put("wd.appName", enterpriseInfo.getString("enterpriseName"));
+            tmsMap3.put("wd.appName", "");
             tmsMap3.put("wd.wsType", "-1");
             tmsMap3.put("wd.orderNum", "");
             tmsMap3.put("pagenum", "1");
-            tmsMap3.put("pagesize", "30");
-            tmsMap3.put("sum", "0");
-            tmsMap3.put("countpage", "0");
+            tmsMap3.put("pagesize", "");
+            tmsMap3.put("sum", "");
+            tmsMap3.put("countpage", "");
             tmsMap3.put("wd.appState", "");
 
             Connection.Response response3 = Jsoup.connect("http://wssq.sbj.cnipa.gov.cn:9080/tmsve/wdsqgl_getWdsqCondition.xhtml")

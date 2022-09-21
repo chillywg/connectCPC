@@ -314,7 +314,7 @@ public class ShunchaoConnectCpcController {
 
 						}else {
 							log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
-							return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+//							return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
 						}
 					} else {
 						count++;
