@@ -234,6 +234,8 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
             String body = execute.body();
             JSONObject jsonObject = JSONObject.parseObject(body);
             Boolean success = (Boolean) jsonObject.get("success");
+            tmsDocMap.clear();
+            tmsDocMap.put("path", jsonObject.getString("result"));
         }
         return tmsDocMap;
     }
