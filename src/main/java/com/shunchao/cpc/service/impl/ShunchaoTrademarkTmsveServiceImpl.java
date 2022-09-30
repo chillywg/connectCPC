@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -156,6 +158,7 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
         cookie ="_trs_uv=l82fo8cf_4693_25n4; tmsve10.21=2272.7689.15402.0000; 018f9ebc91337e3e72=a91dd1b5d77cb4fb8bc58c55500c4c6c; JSESSIONID=00007vzoP8b7x06cTJeyYn0diRE:1bm10lcno;";
         List<ShunchaoTrademarkTmsve> trademarkTmsveList = new ArrayList<>();
         if (Objects.nonNull(enterpriseInfo)) {
+            SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
             //查询商标网国内申请管理
             Map<String, String> tmsMap3 = new HashMap<>();
@@ -192,6 +195,15 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
                             Element td3 = tds.get(j);
                             trademarkTmsve.setTmsveAgencynumber(td3.text());
                         }
+                        if (j == 4) {
+                           Element td4 = tds.get(j);
+                            try {
+                                Date applyDay = sf.parse(td4.text());
+                                trademarkTmsve.setTmsveApplyday(applyDay);
+                            } catch (ParseException e) {
+                                log.error("申请日转换错误",e);
+                            }
+                        }
                         if (j == 5) {
                             Element td5 = tds.get(j);
                             trademarkTmsve.setTmsveApplynumber(td5.text());
@@ -216,6 +228,7 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
         BufferedInputStream bufferedInputStream = docResponse.bodyStream();
         //保存 相对路径 trademark/offcialText/商标id/申请号/官文.pdf （dociD）
         String path = CpcPathInComputer.getCpcBinPathWindowsComputer() + File.separator + basecpc + File.separator + notices + File.separator + applyNumber + File.separator;
+        //String path = "d:\\gwssitemp" + File.separator + basecpc + File.separator + notices + File.separator + applyNumber + File.separator;
         String fileName = docId + ".pdf";
         File file = new File( path);
         if (!file.exists()) {
