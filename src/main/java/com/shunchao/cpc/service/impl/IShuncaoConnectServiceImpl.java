@@ -278,6 +278,9 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
                 mapWj.put("WENJIANZT", "0");
                 mapWj.put("COUNTS", shunchaoAttachmentInfo.getCounts() == null ? 0 : Integer.parseInt(shunchaoAttachmentInfo.getCounts()));
                 mapWj.put("PAGES", shunchaoAttachmentInfo.getPages() == null ? 0 : Integer.parseInt(shunchaoAttachmentInfo.getPages()));
+                if ("100104".equals(shunchaoAttachmentInfo.getTableCode())) {
+                    mapWj.put("BEIZHU", shunchaoAttachmentInfo.getRemark() == null ? "" : shunchaoAttachmentInfo.getRemark());
+                }
                 wjtable.addRowFromMap(mapWj);
 
                 for (Row row : wjtable) {
