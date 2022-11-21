@@ -106,6 +106,7 @@ public class ShunchaoTmsveController {
 								List<Map<String, Object>> objectMap1 = mapList.stream().filter(i -> s.equals((String) i.get("tmsveDocId"))).collect(Collectors.toList());
 								String jsonString = JSON.toJSONString(objectMap1.get(0));
 								ShunchaoTrademarkTmsve shunchaoTrademarkTmsve = JSON.parseObject(jsonString, ShunchaoTrademarkTmsve.class);
+								shunchaoTrademarkTmsve.setAgencyId(enterpriceAgencyId);
 								shunchaoTrademarkTmsve.setTmsveRelativepath(mapPath.get("path"));
 								shunchaoTrademarkTmsveList.add(shunchaoTrademarkTmsve);
 							} catch (Exception e) {
