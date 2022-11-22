@@ -48,7 +48,7 @@ public class ShunchaoTrademarkTmsveController {
 
         try {
             String rootPath = System.getProperty("exe.path");
-            //String rootPath ="D:\\connectttt\\";
+//            String rootPath ="D:\\duouanzhuang\\duou\\";
             //System.out.println("开始提交程序：=====根目录====="+rootPath);
             driver = SeleniumUtils.beforeM(driver,rootPath);
 
@@ -64,7 +64,8 @@ public class ShunchaoTrademarkTmsveController {
             ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+1000);
 
             //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[1]/div/input")).click();//开发本地电脑可以
-            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
+            //driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
+            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).sendKeys(Keys.ENTER);
             //driver.findElement(By.cssSelector(".pop-next")).click();//开发本地电脑可以
             Thread.sleep(5000);
 

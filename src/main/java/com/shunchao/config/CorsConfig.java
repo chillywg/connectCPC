@@ -21,7 +21,7 @@ public class CorsConfig implements WebMvcConfigurer {
         corsConfiguration.setAllowCredentials(true);
         //允许访问的客户端域名
         corsConfiguration.addAllowedOrigin("http://user.duou.com");
-        //corsConfiguration.addAllowedOrigin("http://192.168.1.177:8089");
+//        corsConfiguration.addAllowedOrigin("http://192.168.1.177:8093");
         //允许服务端访问的客户端请求头
         corsConfiguration.addAllowedHeader("Content-type");
         //允许访问的方法名,GET POST等
