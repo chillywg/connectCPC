@@ -63,7 +63,7 @@ public class ShunchaoTrademarkTmsve {
 
     //===========================新增========================
     private String tmsveDocid;
-
+    private String agencyId;
 
     //===========================非表========================
     private String tmsveIndex;
