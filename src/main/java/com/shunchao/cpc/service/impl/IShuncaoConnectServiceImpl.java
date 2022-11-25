@@ -234,7 +234,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
                 file.mkdirs();// 创建文件根目录
             }
             String attachmentSuffix = shunchaoAttachmentInfo.getAttachmentSuffix();
-            if (".xml".equals(attachmentSuffix)) {
+            if (".xml".equals(attachmentSuffix) && "0".equals(shunchaoAttachmentInfo.getCpcCreateType())) {
                 attachmentSuffix = ".doc";
             }
             //相对路径
