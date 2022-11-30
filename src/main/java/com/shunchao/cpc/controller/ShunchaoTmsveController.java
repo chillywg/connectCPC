@@ -76,12 +76,11 @@ public class ShunchaoTmsveController {
 				List<ShunchaoTrademarkTmsve> trademarkTmsveList=shunchaoTrademarkTmsveService.tmsveQueryDomesticApplication(domesticApplyDateBegin, domesticApplyDateEnd, enterpriceAgencyInfo, cookie);
 				HashMap<String, Object> map = new HashMap<>();
 				map.put("trademarkString",JSON.toJSONString(trademarkTmsveList));
+				map.put("enterpriceAgencyId",enterpriceAgencyId);
 				System.out.println(map.get("fw.appNum"));
 				//存入商标信息
-				HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/updateTrademarkinfo").
+				String tmsveList = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/updateAndGetTrademarkinfo").
 						header("X-Access-Token", token).form(map).execute().body();
-				String tmsveList = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getTmsveList").
-						header("X-Access-Token", token).execute().body();
 				JSONObject tmsveJson= JSONObject.parseObject(tmsveList);
 				String resultJson =tmsveJson.get("result").toString();
 				List<HashMap> stringList = JSONObject.parseArray(resultJson, HashMap.class);
