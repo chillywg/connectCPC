@@ -265,8 +265,13 @@ public class ShunchaoConnectCpcController {
 	
 	@GetMapping(value = "/getNotices", produces = "application/jsonp; charset=utf-8")
 	public String getNoticesByPatentNo(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
-		//todo 获取系统的所有案件的内部编号
-		int count = 0;
+		//获取系统的所有案件的内部编号
+		int count = 0;//常规官文总数
+		int signature = 0;//签章官文总数
+		int receipt = 0;//电子申请回执总数
+
+		int fail = 0;//失败总数
+
         Connection conn = null;
 		try {
 			//获取官文数量
@@ -313,11 +318,23 @@ public class ShunchaoConnectCpcController {
 							log.info("通知书编号：" + tongzhishubh + " 未匹配到系统中案件，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
 
 						}else {
-							log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
+							log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + queryMap.get("TONGZHISMC") + "，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("NEIBUBH"));
+							fail++;
 //							return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
 						}
 					} else {
-						count++;
+						String qianzhangbj = paramMap.get("qianzhangbj").toString();
+
+						if ("1".equals(qianzhangbj)) {
+							signature++;
+						} else {
+							String tongzhisdm = paramMap.get("tongzhisdm").toString();
+							if ("200105".equals(tongzhisdm)) {
+								receipt++;
+							} else {
+								count++;
+							}
+						}
 					}
 				}
 			}
@@ -377,11 +394,12 @@ public class ShunchaoConnectCpcController {
 				return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
 			}
 		}
+		String result = "成功获取常规官文：" + count + "，<br>签章官文：" + signature + "，<br>电子申请回执：" + receipt + "，<br>获取失败总数：" + fail;//<br>标签由前端处理换行
 		if (StringUtils.isNotBlank(callback)) {
-			String string = JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
+			String string = JSONObject.toJSONString(Result.ok(result));
 			return callback + "(" + string + ")";
 		} else {
-			return JSONObject.toJSONString(Result.ok("成功获取官文：" + count));
+			return JSONObject.toJSONString(Result.ok(result));
 		}
 //		return Result.ok("获取官文成功");
 	}
