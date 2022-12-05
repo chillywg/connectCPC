@@ -47,8 +47,8 @@ public class ShunchaoTrademarkTmsveController {
         String htmlScrolltoJs = "parent.scrollTo(0,600)";
 
         try {
-//            String rootPath = System.getProperty("exe.path");
-            String rootPath ="D:\\DUOUEXE\\duou\\";
+            String rootPath = System.getProperty("exe.path");
+//            String rootPath ="D:\\DUOUEXE\\duou\\";
             //System.out.println("开始提交程序：=====根目录====="+rootPath);
             driver = SeleniumUtils.beforeM(driver,rootPath);
 

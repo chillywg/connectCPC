@@ -82,8 +82,8 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
     public String getTrademarkAnnex(List<ShunchaoTrademarkAnnex> trademarkAnnexList,String token){
         String answer = null;
         if (trademarkAnnexList.size() > 0) {
-//            String exePath = System.getProperty("exe.path");
-            String exePath = "D:\\DUOUEXE\\duou\\";
+            String exePath = System.getProperty("exe.path");
+//            String exePath = "D:\\DUOUEXE\\duou\\";
             //System.out.println("加载附件到本地=====根目录：====="+exePath);
             String execute = null;
             String message = null;
