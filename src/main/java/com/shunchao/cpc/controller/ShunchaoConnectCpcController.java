@@ -19,15 +19,20 @@ import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.util.DBHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.util.*;
 
@@ -111,7 +116,7 @@ public class ShunchaoConnectCpcController {
 
 		try {
 			for (String sid : split) {
-				paramMap.put("id", sid);
+				/*paramMap.put("id", sid);
 				//		String result = HttpUtil.get(connecturl + "/sendcpc/shunchaoSendCpcCase/queryCaseInfoById", paramMap);
 				String body = HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/queryCaseInfoById").
 						header("X-Access-Token", token).form(paramMap).execute().body();
@@ -128,6 +133,33 @@ public class ShunchaoConnectCpcController {
 
 				HashMap<String, Object> param = new HashMap<>();
 				param.put("id", sendId);
+				HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/updateStatus").
+						header("X-Access-Token", token).form(param).execute();*/
+
+				long l = System.currentTimeMillis();
+
+				HashMap<String, Object> mapPara = new HashMap<>();
+				mapPara.put("id", sid);
+				HttpResponse execute = HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/downloadNewCPCFileBag").
+						header("X-Access-Token", token).form(mapPara).execute();
+				String body1 = execute.body();
+				JSONObject parseObject = JSONObject.parseObject(body1);
+				JSONObject result = (JSONObject) parseObject.get("result");
+//				String message = parseObject.getString("message");
+				String content = result.getString("content");
+				String filename = result.getString("filename");
+				byte[] bytes1 = Base64Utils.decodeFromString(content);
+
+				System.out.println(System.currentTimeMillis() - l);
+
+				long a = System.currentTimeMillis();
+//				HttpRequest.post("http://localhost:9999/common/anjian/import").header("X-Access-Token", token).form("file", bytes1, "123.zip");
+				InputStream in = new ByteArrayInputStream(bytes1);
+				org.jsoup.Connection.Response response = Jsoup.connect("http://localhost:9999/common/anjian/import")
+						.data("file",filename,in).method(org.jsoup.Connection.Method.POST).ignoreContentType(true).execute();
+				System.out.println(System.currentTimeMillis() - a);
+				HashMap<String, Object> param = new HashMap<>();
+				param.put("id", sid);
 				HttpRequest.get(connecturl + "/sendcpc/shunchaoSendCpcCase/updateStatus").
 						header("X-Access-Token", token).form(param).execute();
 			}
