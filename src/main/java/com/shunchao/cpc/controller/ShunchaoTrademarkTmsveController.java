@@ -48,7 +48,7 @@ public class ShunchaoTrademarkTmsveController {
 
         try {
             String rootPath = System.getProperty("exe.path");
-//            String rootPath ="D:\\duouanzhuang\\duou\\";
+//            String rootPath ="D:\\DUOUEXE\\duou\\";
             //System.out.println("开始提交程序：=====根目录====="+rootPath);
             driver = SeleniumUtils.beforeM(driver,rootPath);
 
@@ -81,8 +81,8 @@ public class ShunchaoTrademarkTmsveController {
             //driver.findElement(By.cssSelector("#menu > ul:nth-child(1) > li:nth-child(1) > a:nth-child(1)")).click();//开发本地电脑可以
             driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[1]/UL/LI/A")).click();
             //driver.findElement(By.cssSelector("#menu > ul:nth-child(1) > li:nth-child(1) > ul:nth-child(2) > li:nth-child(1) > a:nth-child(1)")).click();
-
-            //System.out.println("=============当前页面源码============="+driver.getPageSource());
+//            System.out.println("=============当前页面源码============="+driver.getPageSource());
+            driver.findElement(By.xpath("//a[@class=\"l-btn l-btn-small l-btn-focus\"]")).click();
             //进入iframe
             driver.switchTo().frame("myframe");
             //System.out.println("=====当前myframe页面======"+driver.getWindowHandle());

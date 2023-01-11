@@ -83,7 +83,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
         String answer = null;
         if (trademarkAnnexList.size() > 0) {
             String exePath = System.getProperty("exe.path");
-//            String exePath = "D:\\duouanzhuang\\duou\\";
+//            String exePath = "D:\\DUOUEXE\\duou\\";
             //System.out.println("加载附件到本地=====根目录：====="+exePath);
             String execute = null;
             String message = null;
