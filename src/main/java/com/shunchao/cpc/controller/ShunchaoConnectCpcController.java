@@ -1,6 +1,7 @@
 package com.shunchao.cpc.controller;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.XmlUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
@@ -17,6 +18,7 @@ import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.util.DBHelper;
+import com.shunchao.cpc.util.SqliteDBUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -26,9 +28,11 @@ import org.springframework.util.Base64Utils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.w3c.dom.Document;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.xpath.XPathConstants;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -296,7 +300,7 @@ public class ShunchaoConnectCpcController {
 	}
 	
 	@GetMapping(value = "/getNotices", produces = "application/jsonp; charset=utf-8")
-	public String getNoticesByPatentNo(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
+	public String getNoticesByPatentNo2(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
 		//获取系统的所有案件的内部编号
 		int count = 0;//常规官文总数
 		int signature = 0;//签章官文总数
@@ -435,7 +439,109 @@ public class ShunchaoConnectCpcController {
 		}
 //		return Result.ok("获取官文成功");
 	}
+	@GetMapping(value = "/getNotices2", produces = "application/jsonp; charset=utf-8")
+	public String getNoticesByPatentNo(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
+//		String shunchaoDzsqKhdTzs = HttpRequest.get(connecturl + "/notice/shunchaoDzsqKhdTzs/getFawenrStart").
+//				header("X-Access-Token", token).execute().body();
+//		JSONObject json = JSONObject.parseObject(shunchaoDzsqKhdTzs);
+//		Boolean succ = (Boolean) json.get("success");
+//		String fawenrStart ="";
+//		if (succ) {
+//			if(Objects.isNull(json.get("result"))){
+//				if (StringUtils.isNotBlank(callback)) {
+//					String string = JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
+//					return callback + "(" + string + ")";
+//				}else{
+//					return JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
+//				}
+//			}else{
+//				fawenrStart = json.get("result").toString();
+//			}
+//		}else{
+//			if (StringUtils.isNotBlank(callback)) {
+//				String string = JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
+//				return callback + "(" + string + ")";
+//			} else {
+//				return JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
+//			}
+//		}
+//        String rId = CpcUtils.getRId(fawenrStart);
+		String sql ="SELECT zxsq_dzfwbxx_t_rid,yewuztbh,fawenbcflj,fawenxlh,zhuanlimc,fawenbmc,tongzhismc,tongzhislx,dianzifwrq FROM zxsq_dzfwbxx_t where del_flag = 0 and fawenbcflj is not NULL and fawenbcflj !=''";
+		String[] column = new String[]{"zxsq_dzfwbxx_t_rid","yewuztbh", "fawenbcflj", "fawenxlh", "zhuanlimc","fawenbmc", "tongzhismc", "tongzhislx","dianzifwrq"};
+		String[] column2 = new String[]{"zxsqDzfwbxxTRid","SHENQINGH", "CUNCHULUJING", "FAWENXLH", "FAMINGMC","TONGZHISBH", "TONGZHISMC", "TONGZHISDM","FAWENRQ"};
+		List<Map<String, Object>> maps = SqliteDBUtils.queryMapListBySql(sql, column,column2);
+		Map map = System.getenv();
+		String cnipa_client_home = map.get("CNIPA_CLIENT_HOME").toString();
+		cnipa_client_home = cnipa_client_home +"\\plugins\\as\\cpc-main-as\\data";
+		Map<String, Object> paramMap = null;
+		int fail = 0;//失败总数
+		int count = 0;//常规官文总数
+		int receipt = 0;//电子申请回执总数
+		for(Map<String, Object> queryMap : maps){
+			paramMap = new HashMap<>();
+			String CUNCHULUJING = (String) queryMap.get("CUNCHULUJING");
+			Integer zxsqDzfwbxxTRid = (Integer) queryMap.get("zxsqDzfwbxxTRid");
+			CUNCHULUJING=cnipa_client_home+CUNCHULUJING.substring(11,CUNCHULUJING.length())+"\\";
+			File xmlFile =new File(CUNCHULUJING+"\\list.xml");
+			Document docResult = XmlUtil.readXML(xmlFile);
+			//获取官文中内部编号
+			String neibubh = XmlUtil.getByXPath("//data-bus/TONGZHISXJ/SHUXINGXX/NEIBUBH", docResult, XPathConstants.STRING).toString();
+			queryMap.put("neibubh",neibubh);
+			paramMap.put("neibubh",neibubh);
+			paramMap.put("qianzhangbj","0");
 
+			File file = new File(CUNCHULUJING+zxsqDzfwbxxTRid+".zip");
+			String tongzhishubh = (String) queryMap.get("TONGZHISBH");
+
+			for (String col : column2) {
+				paramMap.put(col.toLowerCase(), queryMap.get(col));
+			}
+			if (file.exists()) {
+//                paramMap.put("file", ZipUtil.zip(file));
+				paramMap.put("file", file);
+				HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+						header("X-Access-Token", token).form(paramMap).execute();
+				String body = execute.body();
+				JSONObject jsonObject = JSONObject.parseObject(body);
+				Boolean success = (Boolean) jsonObject.get("success");
+				Integer code = (Integer) jsonObject.get("code");
+				if (!success) {
+					if (40002 == code) {
+						String updatesql ="update zxsq_dzfwbxx_t set del_flag = 1 where zxsq_dzfwbxx_t_rid = "+zxsqDzfwbxxTRid;
+						SqliteDBUtils.update(updatesql);
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + queryMap.get("TONGZHISMC") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("neibubh"));
+					}else if(40003 == code){
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + queryMap.get("TONGZHISMC") +" 未匹配到系统中案件，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("neibubh"));
+
+					}else if(40006 == code){
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + queryMap.get("TONGZHISMC") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("neibubh"));
+
+					}else {
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + queryMap.get("TONGZHISMC") + "，发明名称为：" + (String) queryMap.get("FAMINGMC") + "，内部编号为：" + (String) queryMap.get("neibubh"));
+						fail++;
+//							return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+					}
+				} else {
+					String updatesql ="update zxsq_dzfwbxx_t set del_flag = 1 where zxsq_dzfwbxx_t_rid = "+zxsqDzfwbxxTRid;
+					SqliteDBUtils.update(updatesql);
+//                    String qianzhangbj = paramMap.get("qianzhangbj").toString();
+					String tongzhisdm = paramMap.get("tongzhisdm").toString();
+					if ("200105".equals(tongzhisdm)) {
+						receipt++;
+					} else {
+						count++;
+					}
+				}
+			}
+		}
+		String result = "成功获取常规官文：" + count +  "，<br>电子申请回执：" + receipt + "，<br>获取失败总数：" + fail;//<br>标签由前端处理换行
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok(result));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok(result));
+		}
+	}
 	/**
 	* @Description : 获取CPC官文（走Fork join 框架）
 	* @Param [callback, token, req]
