@@ -441,31 +441,6 @@ public class ShunchaoConnectCpcController {
 	}
 	@GetMapping(value = "/getNotices2", produces = "application/jsonp; charset=utf-8")
 	public String getNoticesByPatentNo(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
-//		String shunchaoDzsqKhdTzs = HttpRequest.get(connecturl + "/notice/shunchaoDzsqKhdTzs/getFawenrStart").
-//				header("X-Access-Token", token).execute().body();
-//		JSONObject json = JSONObject.parseObject(shunchaoDzsqKhdTzs);
-//		Boolean succ = (Boolean) json.get("success");
-//		String fawenrStart ="";
-//		if (succ) {
-//			if(Objects.isNull(json.get("result"))){
-//				if (StringUtils.isNotBlank(callback)) {
-//					String string = JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
-//					return callback + "(" + string + ")";
-//				}else{
-//					return JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
-//				}
-//			}else{
-//				fawenrStart = json.get("result").toString();
-//			}
-//		}else{
-//			if (StringUtils.isNotBlank(callback)) {
-//				String string = JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
-//				return callback + "(" + string + ")";
-//			} else {
-//				return JSONObject.toJSONString(Result.error(500, "上一次官文日期获取失败"));
-//			}
-//		}
-//        String rId = CpcUtils.getRId(fawenrStart);
 		String sql ="SELECT zxsq_dzfwbxx_t_rid,yewuztbh,fawenbcflj,fawenxlh,zhuanlimc,fawenbmc,tongzhismc,tongzhislx,dianzifwrq FROM zxsq_dzfwbxx_t where del_flag = 0 and fawenbcflj is not NULL and fawenbcflj !=''";
 		String[] column = new String[]{"zxsq_dzfwbxx_t_rid","yewuztbh", "fawenbcflj", "fawenxlh", "zhuanlimc","fawenbmc", "tongzhismc", "tongzhislx","dianzifwrq"};
 		String[] column2 = new String[]{"zxsqDzfwbxxTRid","SHENQINGH", "CUNCHULUJING", "FAWENXLH", "FAMINGMC","TONGZHISBH", "TONGZHISMC", "TONGZHISDM","FAWENRQ"};
@@ -562,4 +537,68 @@ public class ShunchaoConnectCpcController {
 		System.out.println("文件名" + orgName);
 	    return "12345";
      }
+
+     //处理新cpc系统路径问题官文
+	@GetMapping(value = "/getNotices3", produces = "application/jsonp; charset=utf-8")
+	public String getNoticesByPatentNo3(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
+		String sql ="SELECT zxsq_dzfwbxx_t_rid,yewuztbh,fawenbcflj,fawenxlh,zhuanlimc,fawenbmc,tongzhismc,tongzhislx,dianzifwrq FROM zxsq_dzfwbxx_t where fawenbcflj is not NULL and fawenbcflj !=''";
+		String[] column = new String[]{"zxsq_dzfwbxx_t_rid","yewuztbh", "fawenbcflj", "fawenxlh", "zhuanlimc","fawenbmc", "tongzhismc", "tongzhislx","dianzifwrq"};
+		String[] column2 = new String[]{"zxsqDzfwbxxTRid","SHENQINGH", "CUNCHULUJING", "FAWENXLH", "FAMINGMC","TONGZHISBH", "TONGZHISMC", "TONGZHISDM","FAWENRQ"};
+		List<Map<String, Object>> maps = SqliteDBUtils.queryMapListBySql(sql, column,column2);
+		Map map = System.getenv();
+		String cnipa_client_home = map.get("CNIPA_CLIENT_HOME").toString();
+		cnipa_client_home = cnipa_client_home +"\\plugins\\as\\cpc-main-as\\data";
+		Map<String, Object> paramMap = null;
+		int fail = 0;//失败总数
+		int count = 0;//常规官文总数
+		int receipt = 0;//电子申请回执总数
+		for(Map<String, Object> queryMap : maps){
+			paramMap = new HashMap<>();
+			String CUNCHULUJING = (String) queryMap.get("CUNCHULUJING");
+			Integer zxsqDzfwbxxTRid = (Integer) queryMap.get("zxsqDzfwbxxTRid");
+			CUNCHULUJING=cnipa_client_home+CUNCHULUJING.substring(11,CUNCHULUJING.length())+"\\";
+
+			File file = new File(CUNCHULUJING+zxsqDzfwbxxTRid+".zip");
+			String tongzhishubh = (String) queryMap.get("TONGZHISBH");
+
+			for (String col : column2) {
+				paramMap.put(col.toLowerCase(), queryMap.get(col));
+			}
+			if (file.exists()) {
+//                paramMap.put("file", ZipUtil.zip(file));
+				paramMap.put("file", file);
+				HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload2").
+						header("X-Access-Token", token).form(paramMap).execute();
+				String body = execute.body();
+				JSONObject jsonObject = JSONObject.parseObject(body);
+				Boolean success = (Boolean) jsonObject.get("success");
+				Integer code = (Integer) jsonObject.get("code");
+				if (!success) {
+					if (40001 == code) {
+						fail++;
+						log.info("失败通知书编号：" + tongzhishubh + " 官文为空，通知书名称：" + queryMap.get("TONGZHISMC") +"发明名称为：" + (String) queryMap.get("FAMINGMC"));
+					}else if(40002 == code){
+						fail++;
+						log.info("失败通知书编号：" + tongzhishubh + " 编号为空，通知书名称：" + queryMap.get("TONGZHISMC") +"发明名称为：" + (String) queryMap.get("FAMINGMC"));
+					}else if(40003 == code){
+						count++;
+						log.info("成功通知书编号：" + tongzhishubh + " 不需要替换，通知书名称：" + queryMap.get("TONGZHISMC") +"发明名称为：" + (String) queryMap.get("FAMINGMC"));
+					}else{
+						fail++;
+						log.info("失败通知书编号：" + tongzhishubh + " 异常报错，通知书名称：" + queryMap.get("TONGZHISMC") +"发明名称为：" + (String) queryMap.get("FAMINGMC"));
+					}
+				} else {
+					count++;
+					log.info("成功通知书编号：" + tongzhishubh + "通知书名称：" + queryMap.get("TONGZHISMC") +"发明名称为：" + (String) queryMap.get("FAMINGMC"));
+				}
+			}
+		}
+		String result = "成功处理官文：" + count+ "，<br>失败处理总数：" + fail;//<br>标签由前端处理换行
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok(result));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok(result));
+		}
+	}
 }
