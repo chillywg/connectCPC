@@ -17,6 +17,7 @@ import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
 import com.shunchao.cpc.model.ShunchaoCaseInfo;
 import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
 import com.shunchao.cpc.service.IShuncaoConnectService;
+import com.shunchao.cpc.util.CpcUtils;
 import com.shunchao.cpc.util.DBHelper;
 import com.shunchao.cpc.util.SqliteDBUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -594,6 +595,61 @@ public class ShunchaoConnectCpcController {
 			}
 		}
 		String result = "成功处理官文：" + count+ "，<br>失败处理总数：" + fail;//<br>标签由前端处理换行
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok(result));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok(result));
+		}
+	}
+	@GetMapping(value = "/getNotices4", produces = "application/jsonp; charset=utf-8")
+	public String getPatentCertificate(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
+		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate();
+		int fail = 0;//失败总数
+		int count = 0;//常规官文总数
+		for(Map<String, Object> paramMap : maps){
+			String dbPath = CpcUtils.inportFile(paramMap.get("fid").toString(), paramMap.get("tongzhisbh").toString());
+			paramMap.put("qianzhangbj","1");
+			//解压压缩包
+			File unzip = ZipUtil.unzip(new File(dbPath));
+			File[] files = unzip.listFiles();
+			File file = null;
+			for (File f : files) {
+				if (f.isFile() && f.getPath().contains(paramMap.get("fawenxlh").toString())) {
+					file = f;
+					break;
+				}
+			}
+			String tongzhishubh = (String) paramMap.get("tongzhisbh");
+			if (file.exists()) {
+//                paramMap.put("file", ZipUtil.zip(file));
+				paramMap.put("file", file);
+				HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+						header("X-Access-Token", token).form(paramMap).execute();
+				String body = execute.body();
+				JSONObject jsonObject = JSONObject.parseObject(body);
+				Boolean success = (Boolean) jsonObject.get("success");
+				Integer code = (Integer) jsonObject.get("code");
+				if (!success) {
+					fail++;
+					if (40002 == code) {
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+					}else if(40003 == code){
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
+
+					}else if(40006 == code){
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
+
+					}else {
+						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+//							return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+					}
+				} else {
+					count++;
+				}
+			}
+		}
+		String result = "成功获取证书：" + count +  "，<br>获取失败总数：" + fail;//<br>标签由前端处理换行
 		if (StringUtils.isNotBlank(callback)) {
 			String string = JSONObject.toJSONString(Result.ok(result));
 			return callback + "(" + string + ")";
