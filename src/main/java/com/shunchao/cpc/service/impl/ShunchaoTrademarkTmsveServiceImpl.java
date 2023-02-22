@@ -1,25 +1,25 @@
 package com.shunchao.cpc.service.impl;
 
-import cn.hutool.core.util.ZipUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSONObject;
 import com.shunchao.config.CpcPathInComputer;
-import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.model.ShunchaoTrademarkTmsve;
 import com.shunchao.cpc.service.IShunchaoTrademarkTmsveService;
+import com.shunchao.cpc.util.CustomAnnotation;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.util.StringUtil;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -42,68 +42,44 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
     private String connecturl;
 
 
-    public String getCookie() throws IOException {
-        Connection.Response response = Jsoup.connect("http://wssq.sbj.cnipa.gov.cn:9080/tmsve/main/login.jsp")
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36")
-                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-                .header("Accept-Encoding", "gzip, deflate")
-                .header("Accept-Language", "zh-CN,zh;q=0.9")
-                .header("Host","wssq.sbj.cnipa.gov.cn:9080")
-                .header("Cache-Control","max-age=0")
-                .header("Connection","keep-alive")
-                .header("Upgrade-Insecure-Requests","1")
-                .header("Cookie","_trs_uv=l82fo8cf_4693_25n4")
-                .referrer("http://wssq.sbj.cnipa.gov.cn:9080/tmsve/wssqsy_quitLogin.xhtml")
-                .method(Connection.Method.GET).ignoreContentType(true).execute();
-        Document parse = response.parse();
-        Map<String,String> cookie = response.cookies();
-        List<String> list = new ArrayList<>();
-
-        Set<Map.Entry<String,String>> entries = cookie.entrySet();
-        for (Map.Entry<String,String> entry:entries){
-            list.add(entry.getKey()+"="+entry.getValue()+";");
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < list.size(); i++) {
-            if (i == list.size() - 1) {
-                sb.append(list.get(i));
-            } else {
-                sb.append(list.get(i) + " ");
-            }
-        }
-
-        String cookieId = sb.toString();
-        return  cookieId;
-    }
-
     /**
-     * 功能描述:商标网登录获取cookie
+     * 功能描述:获取商标网Cookie
      * 场景:
      * @Param: [enterpriceAgencyId]
      * @Return: void
      * @Author: Ironz
      * @Date: 2022/4/13 14:17
      */
-    public String tmsveLogin(JSONObject enterpriseInfo) throws IOException {
+    public Map<String,String> getCookie() throws IOException {
+        Connection.Response response = Jsoup.connect("https://wssq.sbj.cnipa.gov.cn:9443/tmsve/main/login.jsp")
+                .method(Connection.Method.POST).ignoreContentType(true).ignoreHttpErrors(true).execute();
+        Map<String,String> cookie = response.cookies();
+        return  cookie;
+    }
+
+    /**
+     * 功能描述:商标网登录
+     * 场景:
+     * @Param: [enterpriceAgencyId]
+     * @Return: void
+     * @Author: Ironz
+     * @Date: 2022/4/13 14:17
+     */
+    public void tmsveLogin(JSONObject enterpriseInfo, Map<String,String> cookie) throws IOException {
         if (Objects.nonNull(enterpriseInfo)) {
             if (Objects.nonNull(enterpriseInfo.getString("tmsvePin")) && Objects.nonNull(enterpriseInfo.getString("tmsveSignCert")) && Objects.nonNull(enterpriseInfo.getString("tmsveSignData"))) {
 
                 Map<String,String> tmsMap = new HashMap<>();
-                Map<String,String> tmsMap2 = new HashMap<>();
                 //tmsMap.put("pin","456123");
                 tmsMap.put("pin",enterpriseInfo.getString("tmsvePin"));
                 //tmsMap.put("signCert","{\"name\":\"北京和鼎泰知识产权代理有限公司\",\"loginName\":\"Beijinghedingtai\",\"cacertSn\":\"020001\",\"appName\":\"wellhope\",\"containerName\":\"sGXSKlDuIRmnHiV\",\"devId\":\"5496_ehYlWouXhkjCAiYRIzwtH5Q4qBi\",\"validDate\":\"2026-11-09+23:59:59\",\"cn\":\"CNIPASM2Class2CA\"}");
                 tmsMap.put("signCert",enterpriseInfo.getString("tmsveSignCert"));
 //                tmsMap.put("signCert","{\"name\":\"安徽顺超知识产权代理事务所（特殊普通合伙）\",\"loginName\":\"hfscip\",\"cacertSn\":\"020001\",\"appName\":\"wellhope\",\"containerName\":\"197AC095-84D1-40B2-8956-D6D8C9B36E91\",\"devId\":\"5612_J5zVrmxJGx8otyZw211sQ9XXXIU\",\"validDate\":\"2026-12-12 23:59:59\",\"cn\":\"CNIPASM2Class2CA\"}");
-//                tmsMap.put("signCert","{\"name\":\"北京和联顺知识产权代理有限公司\",\"loginName\":\"beijinghelianshun\",\"cacertSn\":\"020001\",\"appName\":\"wellhope\",\"containerName\":\"DVhRXCSgVPAlQxX\",\"devId\":\"5611_6WL9oT4KGtV3ve+D6wsPR4sIAhP\",\"validDate\":\"2026-11-09 23:59:59\",\"cn\":\"CNIPASM2Class2CA\"}");
-                //tmsMap.put("signData","MIIDqwYJKoZIhvcNAQcCoIIDnDCCA5gCAQExDjAMBggqgRzPVQGDdQUAMAsGCSqGSIb3DQEHAaCCAkEwggI9MIIB4qADAgECAgx8hgAAABOY/pY+CqEwDAYIKoEcz1UBg3UFADBIMQswCQYDVQQGEwJDTjEeMBwGA1UECgwV5Zu95a6255+l6K+G5Lqn5p2D5bGAMRkwFwYDVQQDDBBDTklQQVNNMkNsYXNzMkNBMB4XDTIxMTEwOTE2MDAwMFoXDTI2MTEwOTE1NTk1OVowZDEZMBcGA1UECgwQQmVpamluZ2hlZGluZ3RhaTEPMA0GA1UECwwGMDIwMDAxMTYwNAYDVQQDDC3ljJfkuqzlkozpvI7ms7Dnn6Xor4bkuqfmnYPku6PnkIbmnInpmZDlhazlj7gwWTATBgcqhkjOPQIBBggqgRzPVQGCLQNCAARZJzYJLuIFbHqMvu7FWXixjqXOiZ6Knkgr6DSaAQvIxhDpnl/nuH6CU//xoaIgAF+6zoFaRWmpNrt04nIihdbso4GTMIGQMBEGCWCGSAGG+EIBAQQEAwIAgDALBgNVHQ8EBAMCAMAwIAYDVR0lAQH/BBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMAwGA1UdEwQFMAMBAQAwHwYDVR0jBBgwFoAUw3YuI/NgqaKbJOZ/krJAA/OeN60wHQYDVR0OBBYEFKx/7ooYAKklaqIfwQyNqdGbH0NUMAwGCCqBHM9VAYN1BQADRwAwRAIgM4Jlo3ZRzggCXSWhWcW0VOghRVME9uGKc3dLdlynHS8CIDqQL09RLjYbv10+LZ7g5myk/3cHb92M3hUSb/9XY+9zMYIBLzCCASsCAQEwWDBIMQswCQYDVQQGEwJDTjEeMBwGA1UECgwV5Zu95a6255+l6K+G5Lqn5p2D5bGAMRkwFwYDVQQDDBBDTklQQVNNMkNsYXNzMkNBAgx8hgAAABOY/pY+CqEwDAYIKoEcz1UBg3UFAKBpMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIyMDQxMTAzMDYxM1owLwYJKoZIhvcNAQkEMSIEIJLnXLhEXlT6rIWxp3ncKBY9LQcY6ICiKMrtjMT1oEDgMAoGCCqBHM9VAYN1BEcwRQIhAI/rVNLUB8qRGGEUeXHsJ2n3F3z8mwLMGamdyZxmwYKlAiB0pzUwMwCLMHjI3Fe7rzlH8EEqgJJ7vHoflDx3L7gooA==");
-//                tmsMap.put("signData",enterpriseInfo.getString("tmsveSignData"));
-                tmsMap.put("signData","MIIDtgYJKoZIhvcNAQcCoIIDpzCCA6MCAQExDjAMBggqgRzPVQGDdQUAMAsGCSqGSIb3DQEHAaCCAkswggJHMIIB6qADAgECAgx8hgAAABcketUHHVUwDAYIKoEcz1UBg3UFADBIMQswCQYDVQQGEwJDTjEeMBwGA1UECgwV5Zu95a6255+l6K+G5Lqn5p2D5bGAMRkwFwYDVQQDDBBDTklQQVNNMkNsYXNzMkNBMB4XDTIxMTIxMjE2MDAwMFoXDTI2MTIxMjE1NTk1OVowbDEPMA0GA1UECgwGaGZzY2lwMQ8wDQYDVQQLDAYwMjAwMDExSDBGBgNVBAMMP+WuieW+vemhuui2heefpeivhuS6p+adg+S7o+eQhuS6i+WKoeaJgO+8iOeJueauiuaZrumAmuWQiOS8me+8iTBZMBMGByqGSM49AgEGCCqBHM9VAYItA0IABL1Q6kxBG8gFwrXVMhU+D8IyEW0id2EvLKck7FAS8sTiihBmyRtdwbaaV3hCAIGJmz8hlXUOx3HPJzEEJPKmhIWjgZMwgZAwEQYJYIZIAYb4QgEBBAQDAgCAMAsGA1UdDwQEAwIAwDAgBgNVHSUBAf8EFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwDAYDVR0TBAUwAwEBADAfBgNVHSMEGDAWgBTDdi4j82Cpopsk5n+SskAD8543rTAdBgNVHQ4EFgQUHPQoVb6wGkvJbGcJXautzjQqRrYwDAYIKoEcz1UBg3UFAANJADBGAiEAx/N/XMWpDX1JQ2mt5yKNjX/r0p1jUilk3OfJh6GpX5sCIQDMKvazARFL4oKREAQHIArulIPZIxcXKefBiflWB1AK1TGCATAwggEsAgEBMFgwSDELMAkGA1UEBhMCQ04xHjAcBgNVBAoMFeWbveWutuefpeivhuS6p+adg+WxgDEZMBcGA1UEAwwQQ05JUEFTTTJDbGFzczJDQQIMfIYAAAAXJHrVBx1VMAwGCCqBHM9VAYN1BQCgaTAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjAwMDQ0MzlaMC8GCSqGSIb3DQEJBDEiBCDXGhjodkRorMRHAP88ee6x4Yv9txRPytlpjExU2YTiDTAKBggqgRzPVQGDdQRIMEYCIQDEF7wKujOETCDiv1oCpkMg6Ud6hNHtnrd2ri7RpTRnowIhAP/9cxvv9ZL8kEcnuHZDDV62SAGzJyEMEbFb8BeeVQUa");
+                tmsMap.put("signData",enterpriseInfo.getString("tmsveSignData"));
 //                tmsMap.put("signData","MIIDrQYJKoZIhvcNAQcCoIIDnjCCA5oCAQExDjAMBggqgRzPVQGDdQUAMAsGCSqGSIb3DQEHAaCCAkMwggI/MIIB46ADAgECAgx8hgAAABOYBbYrZw8wDAYIKoEcz1UBg3UFADBIMQswCQYDVQQGEwJDTjEeMBwGA1UECgwV5Zu95a6255+l6K+G5Lqn5p2D5bGAMRkwFwYDVQQDDBBDTklQQVNNMkNsYXNzMkNBMB4XDTIxMTEwOTE2MDAwMFoXDTI2MTEwOTE1NTk1OVowZTEaMBgGA1UECgwRYmVpamluZ2hlbGlhbnNodW4xDzANBgNVBAsMBjAyMDAwMTE2MDQGA1UEAwwt5YyX5Lqs5ZKM6IGU6aG655+l6K+G5Lqn5p2D5Luj55CG5pyJ6ZmQ5YWs5Y+4MFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAEtvNg659j4UGhVD0038N9ZjfhJG57ARlONadu3jw8NYJzUGkRivK86fFS1RgHAWz+YSnAp4m45IZLvd71Ku606aOBkzCBkDARBglghkgBhvhCAQEEBAMCAIAwCwYDVR0PBAQDAgDAMCAGA1UdJQEB/wQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAMBgNVHRMEBTADAQEAMB8GA1UdIwQYMBaAFMN2LiPzYKmimyTmf5KyQAPznjetMB0GA1UdDgQWBBTBUd1zmdGlMqFanf/wPMzJ/YCNQDAMBggqgRzPVQGDdQUAA0gAMEUCIHF4pVjVTIQkVU87bczb8LGnOW4Yb3M4U22E8ne+XZWhAiEApZ6lfJMYPMQLXoCrVYL7V89htWEGrSARLfp/7RyTA4wxggEvMIIBKwIBATBYMEgxCzAJBgNVBAYTAkNOMR4wHAYDVQQKDBXlm73lrrbnn6Xor4bkuqfmnYPlsYAxGTAXBgNVBAMMEENOSVBBU00yQ2xhc3MyQ0ECDHyGAAAAE5gFtitnDzAMBggqgRzPVQGDdQUAoGkwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMjIwOTE5MDcyMDQ2WjAvBgkqhkiG9w0BCQQxIgQgl41mG3P15KdJcicfpPXkVsSTkAZSATX0uotYzWuJv98wCgYIKoEcz1UBg3UERzBFAiEAyIUzl2LFFiHrqSkWmvoG1vdaRYu0pARbD0Ij85faNR0CIFpOCXTgeo8feEfTx3Agcvdv8B5QfxgveW8vxCFAwt4Z");
 
-                tmsMap.put("clearData","1663634849939800817");//1663572183955465365
-                tmsMap.put("hashData","1588351197");//149776826
+                tmsMap.put("clearData",enterpriseInfo.getString("tmsveClearData"));//1663572183955465365
+                tmsMap.put("hashData",enterpriseInfo.getString("tmsveHashData"));//149776826
                 tmsMap.put("validDate","");
                 tmsMap.put("startValidDate","");
                 tmsMap.put("certInfo","");
@@ -114,37 +90,20 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
                 tmsMap.put("certCode","");
                 tmsMap.put("caCertSN","");
                 tmsMap.put("containerName","");
-                tmsMap.put("tmurl","http://wssq.sbj.cnipa.gov.cn:9080/tmsve/");
+                tmsMap.put("tmurl","https://wssq.sbj.cnipa.gov.cn:9443/tmsve/");
                 tmsMap.put("agreeProt","on");
-                Connection.Response response = Jsoup.connect("http://wssq.sbj.cnipa.gov.cn:9080/tmsve/wssqsy_getCayzDl.xhtml").data(tmsMap)
+                tmsMap.put("qrid","");
+                tmsMap.put("uniscid","");
+                tmsMap.put("id","");
+                tmsMap.put("str","");
+                tmsMap.put("agreeProt2","on");
+                Connection.Response response = Jsoup.connect("https://wssq.sbj.cnipa.gov.cn:9443/tmsve/wssqsy_getCayzDl.xhtml").cookies( cookie).data(tmsMap)
                         .method(Connection.Method.POST).ignoreContentType(true).execute();
-                Document parse = response.parse();
-                Map<String,String> cookie = response.cookies();
-                List<String> list = new ArrayList<>();
-
-                Set<Map.Entry<String,String>> entries = cookie.entrySet();
-                for (Map.Entry<String,String> entry:entries){
-                    list.add(entry.getKey()+"="+entry.getValue()+";");
-                }
-
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < list.size(); i++) {
-                    if (i == list.size() - 1) {
-                        sb.append(list.get(i));
-                    } else {
-                        sb.append(list.get(i) + " ");
-                    }
-                }
-
-                String cookieId = sb.toString();
-                return  cookieId;
+                String body = response.body();
+                System.out.println("商标网登录");
             }
-        }else {
-            return null;
-        }
-        return null;
     }
-
+    }
 
     /**
      * 功能描述:查询商标网国内申请管理
@@ -154,10 +113,8 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
      * @Author: Ironz
      * @Date: 2022/4/14 9:22
      */
-    public List<ShunchaoTrademarkTmsve> tmsveQueryDomesticApplication(String domesticApplyDateBegin, String domesticApplyDateEnd, JSONObject enterpriseInfo, String cookie) throws IOException{
-        cookie ="_trs_uv=l82fo8cf_4693_25n4; tmsve10.21=2272.7689.15402.0000; 018f9ebc91337e3e72=a91dd1b5d77cb4fb8bc58c55500c4c6c; JSESSIONID=00007vzoP8b7x06cTJeyYn0diRE:1bm10lcno;";
+    public List<ShunchaoTrademarkTmsve> tmsveQueryDomesticApplication(String domesticApplyDateBegin, String domesticApplyDateEnd, Map<String,String> cookie) throws IOException{
         List<ShunchaoTrademarkTmsve> trademarkTmsveList = new ArrayList<>();
-        if (Objects.nonNull(enterpriseInfo)) {
             SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
             //查询商标网国内申请管理
@@ -172,19 +129,18 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
             tmsMap3.put("wd.wsType", "-1");
             tmsMap3.put("wd.orderNum", "");
             tmsMap3.put("pagenum", "1");
-            tmsMap3.put("pagesize", "");
-            tmsMap3.put("sum", "");
-            tmsMap3.put("countpage", "");
+            tmsMap3.put("pagesize", "30");
+            tmsMap3.put("sum", "25");
+            tmsMap3.put("countpage", "1");
+            tmsMap3.put("gopage","1");
             tmsMap3.put("wd.appState", "");
 
-            Connection.Response response3 = Jsoup.connect("http://wssq.sbj.cnipa.gov.cn:9080/tmsve/wdsqgl_getWdsqCondition.xhtml")
-                    .cookie("Cookie", cookie).data(tmsMap3).method(Connection.Method.POST).ignoreContentType(true).execute();
-
-            Document parse3 = response3.parse();
-
-            Elements elementTable = parse3.getElementsByClass("import_tab");
+            Connection.Response response = Jsoup.connect("https://wssq.sbj.cnipa.gov.cn:9443/tmsve/wdsqgl_getWdsqCondition.xhtml")
+                    .cookies(cookie)
+                    .data(tmsMap3).method(Connection.Method.POST).ignoreContentType(true).execute();
+            Document parse =Jsoup.parse(response.body());
+            Elements elementTable = parse.getElementsByClass("import_tab");
             if (Objects.nonNull(elementTable)) {
-
                 Elements trs = elementTable.select("tr");
                 for (int i = 1; i < trs.size(); i++) {
                     Element tr = trs.get(i);
@@ -212,18 +168,85 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
                     trademarkTmsveList.add(trademarkTmsve);
                 }
             }
-        }
         return trademarkTmsveList;
 
     }
-    public Map<String, String> downloadpdf(String cookieId, String docId, String applyNumber, String token) throws IOException {
+
+    /**
+     * @throws
+     * @title analyzing
+     * @description
+     * @author djlcc
+     * @param: tClass
+     * @param: mapParams 需要自定义传入参数 申请号 appNum，开始时间 date1，结束时间 date2
+     * @param: url
+     * @param: cookie
+     * @updateTime 2022/4/13 16:58
+     * @return: java.util.List<java.util.Map   <   java.lang.String   ,   java.lang.Object>>
+     */
+    public <T> List<Map<String, Object>> analyzing(Class<T> tClass, String appNum, Map<String,String> cookie) {
+        List<Map<String, Object>> tmsveList = new ArrayList<>();
+        SimpleDateFormat simpleFormatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US);
+        SimpleDateFormat simpleFormatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            //忽略https证书
+            String url= "https://wssq.sbj.cnipa.gov.cn:9443/tmsve/fwcx_getFwCondition.xhtml";
+            Map<String, String> mapParams = new HashMap<>();
+            mapParams.put("fw.appNum", appNum);
+            mapParams.put("fw.date1", "");
+            mapParams.put("fw.date2", "");
+            mapParams.put("fw.regNum", "");
+            mapParams.put("fw.flowType", "-1");
+            mapParams.put("fw.fileType", "");
+            mapParams.put("pagenum", "1");
+            mapParams.put("pagesize", "30");
+            mapParams.put("sum", "2");
+            mapParams.put("countpage", "1");
+            mapParams.put("gopage", "1");
+            Connection.Response response3 = Jsoup.connect(url).cookies(cookie).data(mapParams).method(Connection.Method.POST).ignoreContentType(true).execute();
+            //Document document = Jsoup.parse(new File("C:\\Users\\admin\\Desktop\\我的发文demo.html"),"UTF-8");
+            Document document = response3.parse();
+            Elements elements = document.getElementsByClass("import_tab");
+            Elements elements1 = elements.select("tr");
+            Field[] fields = tClass.getDeclaredFields();
+            Map<String, Object> map = new HashMap<>();
+            for (Field field : fields) {
+                CustomAnnotation tmsveAnnotation = field.getAnnotation(CustomAnnotation.class);
+                map.put(tmsveAnnotation.value(), field.getName());
+            }
+            for (int a = 1; a < elements1.size(); a++) {
+                Map<String, Object> map1 = new HashMap<>();
+                Elements elements2 = elements1.get(a).select("td");
+                for (int b = 0; b < elements2.size(); b++) {
+                    String fieldName = (String) map.get(elements1.get(0).select("td").get(b).text());
+                    if (StringUtil.isEmpty(fieldName)) {
+                        continue;
+                    }
+                    Object fieldValue = elements2.get(b).text();
+                    if (b == elements2.size() - 1) {
+                        String[] element = elements2.get(b).select("a").get(1).attr("href").replaceAll("'\\)", "").split("=");
+                        fieldValue = element[element.length - 1];
+                    }
+                    if ("发文日期".equals(elements1.get(0).select("td").get(b).text())) {
+                        fieldValue = simpleFormatter1.format(simpleFormatter.parse(elements2.get(b).text()));
+                    }
+                    map1.put(fieldName, fieldValue);
+                }
+                tmsveList.add(map1);
+            }
+        } catch (Exception e) {
+            log.error("商标解析html文件失败:{}", e);
+        }
+        return tmsveList;
+    }
+    public Map<String, String> downloadpdf(Map<String,String> cookie, String docId, String applyNumber, String token) throws IOException {
         Map<String, String> tmsDocMap = new HashMap<>();
         tmsDocMap.put("_", System.currentTimeMillis()+"");
         //tmsDocMap.put("docId","B1021TMZC00000051884945JFTZ0100012");
         tmsDocMap.put("docId", docId);
         tmsDocMap.put("docNo", "1");
-        Connection.Response docResponse = Jsoup.connect("http://wssq.sbj.cnipa.gov.cn:9080/tmsve/fwcx_getPdf.xhtml")
-                .cookie("Cookie", cookieId).data(tmsDocMap).method(Connection.Method.POST).ignoreContentType(true).execute();
+        Connection.Response docResponse = Jsoup.connect("https://wssq.sbj.cnipa.gov.cn:9443/tmsve/fwcx_getPdf.xhtml")
+                .cookies(cookie).data(tmsDocMap).method(Connection.Method.POST).ignoreContentType(true).execute();
         //响应转换成输入流
         BufferedInputStream bufferedInputStream = docResponse.bodyStream();
         //保存 相对路径 trademark/offcialText/商标id/申请号/官文.pdf （dociD）
