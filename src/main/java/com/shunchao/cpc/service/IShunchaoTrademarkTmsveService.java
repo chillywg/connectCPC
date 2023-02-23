@@ -1,5 +1,6 @@
 package com.shunchao.cpc.service;
 import com.alibaba.fastjson.JSONObject;
+import com.shunchao.cpc.model.ShunchaoTmsveAnnotation;
 import com.shunchao.cpc.model.ShunchaoTrademarkTmsve;
 
 import java.io.IOException;
@@ -14,11 +15,10 @@ import java.util.Map;
  */
 public interface IShunchaoTrademarkTmsveService{
 
-    String tmsveLogin(JSONObject enterpriceAgencyInfo) throws IOException;
+    void tmsveLogin(JSONObject enterpriceAgencyInfo, Map<String,String> cookie) throws IOException;
 
-    List<ShunchaoTrademarkTmsve> tmsveQueryDomesticApplication(String domesticApplyDateBegin, String domesticApplyDateEnd, JSONObject enterpriceAgencyInfo, String cookie) throws IOException;
-
-    Map<String,String>  downloadpdf(String cookieId, String docId,String applyNumber, String token) throws IOException;
-
-    String getCookie() throws IOException;
+    List<ShunchaoTrademarkTmsve> tmsveQueryDomesticApplication(String domesticApplyDateBegin, String domesticApplyDateEnd, Map<String,String> cookie) throws IOException;
+    <T> List<Map<String, Object>> analyzing(Class<T> tClass, String appNum, Map<String,String> cookie);
+    Map<String,String>  downloadpdf(Map<String,String> cookie, String docId,String applyNumber, String token) throws IOException;
+    Map<String,String> getCookie() throws IOException;
 }
