@@ -109,7 +109,7 @@ connecturl: user.duou.com/jeecg-boot
 
 #商标网址信息
 trademark:
-  URL: http://wssq.sbj.cnipa.gov.cn:9080/tmsve/
+  URL: https://wssq.sbj.cnipa.gov.cn:9443/tmsve/
 #  PINWORD: 456123
 access_data:
   char_set: gb2312
