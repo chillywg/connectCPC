@@ -442,9 +442,9 @@ public class ShunchaoConnectCpcController {
 	}
 	@GetMapping(value = "/getNotices2", produces = "application/jsonp; charset=utf-8")
 	public String getNoticesByPatentNo(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
-		String sql ="SELECT zxsq_dzfwbxx_t_rid,yewuztbh,fawenbcflj,fawenxlh,zhuanlimc,fawenbmc,tongzhismc,tongzhislx,dianzifwrq FROM zxsq_dzfwbxx_t where del_flag = 0 and fawenbcflj is not NULL and fawenbcflj !=''";
-		String[] column = new String[]{"zxsq_dzfwbxx_t_rid","yewuztbh", "fawenbcflj", "fawenxlh", "zhuanlimc","fawenbmc", "tongzhismc", "tongzhislx","dianzifwrq"};
-		String[] column2 = new String[]{"zxsqDzfwbxxTRid","SHENQINGH", "CUNCHULUJING", "FAWENXLH", "FAMINGMC","TONGZHISBH", "TONGZHISMC", "TONGZHISDM","FAWENRQ"};
+		String sql ="SELECT zxsq_dzfwbxx_t_rid,yewuztbh,fawenbcflj,fawenxlh,zhuanlimc,fawenbmc,tongzhismc,tongzhislx,dianzifwrq,create_user FROM zxsq_dzfwbxx_t where del_flag = 0 and fawenbcflj is not NULL and fawenbcflj !=''";
+		String[] column = new String[]{"zxsq_dzfwbxx_t_rid","yewuztbh", "fawenbcflj", "fawenxlh", "zhuanlimc","fawenbmc", "tongzhismc", "tongzhislx","dianzifwrq","create_user"};
+		String[] column2 = new String[]{"zxsqDzfwbxxTRid","SHENQINGH", "CUNCHULUJING", "FAWENXLH", "FAMINGMC","TONGZHISBH", "TONGZHISMC", "TONGZHISDM","FAWENRQ","phone"};
 		List<Map<String, Object>> maps = SqliteDBUtils.queryMapListBySql(sql, column,column2);
 		Map map = System.getenv();
 		String cnipa_client_home = map.get("CNIPA_CLIENT_HOME").toString();
