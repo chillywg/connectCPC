@@ -50,8 +50,8 @@ public class CpcUtils {
     public static Map<String, Object> getConfirmed(int size) throws IOException {
         //切换到电子票据交付系统的登录对话框
         //2022222057897，2022226093197,2022225939714
-        String fawenrEnd = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        String body="{\"famingczmc\":\"\",\"fawenrStart\":\"2023-01-19\",\"fawenrEnd\":\""+fawenrEnd+"\",\"fawenxlh\":\"\",\"shenqingh\":\"\",\"xiazaizt\":\"\",\"zhanghu\":\"\",\"size\":"+size+",\"current\":1}";
+//        String fawenrEnd = new SimpleDateFormat("yyyyMMdd").format(new Date());
+        String body="{\"famingczmc\":\"\",\"fawenrStart\":\"\",\"fawenrEnd\":\"\",\"fawenxlh\":\"\",\"shenqingh\":\"\",\"xiazaizt\":\"1\",\"zhanghu\":\"\",\"size\":"+size+",\"current\":1}";
         Connection.Response response3 = Jsoup.connect("http://localhost:9999/certs/v1/list")
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
                 .header("Accept","application/json, text/plain, */*")
