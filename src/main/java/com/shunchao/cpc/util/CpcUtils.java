@@ -23,11 +23,11 @@ public class CpcUtils {
      * http://localhost:9999/docs/v1/list
      * 获取cpc系统电子专利证书
      */
-    public static List<Map<String,Object>> getPatentCertificate() throws IOException {
+    public static List<Map<String,Object>> getPatentCertificate(String fawenrStart,String fawenrEnd,String xiazaizt,String shenqingh) throws IOException {
         //切换到电子票据交付系统的登录对话框
-        Map<String, Object> map=getConfirmed(10);
+        Map<String, Object> map=getConfirmed(fawenrStart,fawenrEnd,xiazaizt,shenqingh,10);
         int total= Integer.parseInt(map.get("total").toString());
-        Map<String, Object> map1=getConfirmed(total);
+        Map<String, Object> map1=getConfirmed(fawenrStart,fawenrEnd,xiazaizt,shenqingh,total);
         List<Map<String,Object>> records2 = (List) map1.get("records");
         List<Map<String,Object>> shunchaoDzsqKhdTzsList=new ArrayList<>();
         for(Map<String,Object> map2:records2){
@@ -47,11 +47,10 @@ public class CpcUtils {
      * http://localhost:9999/certs/v1/list
      * 获取cpc系统已确认列表官文
      */
-    public static Map<String, Object> getConfirmed(int size) throws IOException {
+    public static Map<String, Object> getConfirmed(String fawenrStart,String fawenrEnd,String xiazaizt,String shenqingh,int size) throws IOException {
         //切换到电子票据交付系统的登录对话框
         //2022222057897，2022226093197,2022225939714
-//        String fawenrEnd = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        String body="{\"famingczmc\":\"\",\"fawenrStart\":\"\",\"fawenrEnd\":\"\",\"fawenxlh\":\"\",\"shenqingh\":\"\",\"xiazaizt\":\"1\",\"zhanghu\":\"\",\"size\":"+size+",\"current\":1}";
+        String body="{\"famingczmc\":\"\",\"fawenrStart\":\""+fawenrStart+"\",\"fawenrEnd\":\""+fawenrEnd+"\",\"fawenxlh\":\"\",\"shenqingh\":\""+shenqingh+"\",\"xiazaizt\":\""+xiazaizt+"\",\"zhanghu\":\"\",\"size\":"+size+",\"current\":1}";
         Connection.Response response3 = Jsoup.connect("http://localhost:9999/certs/v1/list")
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
                 .header("Accept","application/json, text/plain, */*")

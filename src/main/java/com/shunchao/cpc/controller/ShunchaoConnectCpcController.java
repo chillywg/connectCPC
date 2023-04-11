@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -604,7 +605,12 @@ public class ShunchaoConnectCpcController {
 	}
 	@GetMapping(value = "/getNotices4", produces = "application/jsonp; charset=utf-8")
 	public String getPatentCertificate(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
-		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate();
+//		String fawenrStart= "2023-04-11";//开始时间
+		String fawenrStart= "";
+//		String fawenrEnd = new SimpleDateFormat("yyyy-MM-dd").format(new Date());//结束时间
+		String fawenrEnd ="";
+		String xiazaizt = "1";//("":全部，1：待下载，2：已下载)
+		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate(fawenrStart,fawenrEnd,xiazaizt,"");//注:开始时间和结束时间必须同时传值
 		int fail = 0;//失败总数
 		int count = 0;//常规官文总数
 		for(Map<String, Object> paramMap : maps){
@@ -631,18 +637,17 @@ public class ShunchaoConnectCpcController {
 				Boolean success = (Boolean) jsonObject.get("success");
 				Integer code = (Integer) jsonObject.get("code");
 				if (!success) {
-					fail++;
 					if (40002 == code) {
-						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+						log.info("通知书编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
 					}else if(40003 == code){
-						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
-
+						fail++;
+						log.info("通知书编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
 					}else if(40006 == code){
-						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
-
+						fail++;
+						log.info("通知书编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
 					}else {
-						log.info("通知书编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
-//							return JSONObject.toJSONString(Result.error(500, "从CPC获取官文失败"));
+						fail++;
+						log.info("通知书编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
 					}
 				} else {
 					count++;
