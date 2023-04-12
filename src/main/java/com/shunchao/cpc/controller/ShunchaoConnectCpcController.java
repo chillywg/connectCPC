@@ -615,7 +615,7 @@ public class ShunchaoConnectCpcController {
 		int count = 0;//常规官文总数
 		for(Map<String, Object> paramMap : maps){
 			String dbPath = CpcUtils.inportFile(paramMap.get("fid").toString(), paramMap.get("tongzhisbh").toString());
-			paramMap.put("qianzhangbj","1");
+			paramMap.put("qianzhangbj","0");
 			//解压压缩包
 			File unzip = ZipUtil.unzip(new File(dbPath));
 			File[] files = unzip.listFiles();
