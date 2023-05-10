@@ -879,8 +879,8 @@ public class ShunchaoTrademarkTmsveController {
                                 driver.findElement(By.cssSelector(".chart_list > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > input:nth-child(1)")).click();
 
                             } else if (size == 0) {
-                                System.out.println("======个数为："+size+"个，所以直接跳过循环");
-                                continue;
+                                log.info("======个数为："+size+"个，所以直接跳过循环");
+                                throw new Exception (trademarkProduct.getSname()+"产品查询不到");
                             } else if (size > 1) {
                                 ii:
                                 for (int itr = 3;itr<tableTrList.size();itr++){
@@ -987,13 +987,11 @@ public class ShunchaoTrademarkTmsveController {
             //driver.switchTo().parentFrame();
 
             mark = "0";//执行完成
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            mark = "1";//执行错误
+        } catch (Exception e) {
+            log.info(trademarkApplicantProduct.getTrademarkName()+"向商标局发文失败",e);
+            return Result.error(e.getMessage());
         }
-
         return Result.ok(mark);
-
     }
 
 }
