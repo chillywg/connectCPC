@@ -109,7 +109,7 @@ public class CpcUtils {
             fileOutputStream.close();
             bufferedOutputStream.close();
         }catch (IOException e){
-            log.info(e.getMessage());
+            log.info(e.getMessage(),e);
         }
         return dbPath;
     }
