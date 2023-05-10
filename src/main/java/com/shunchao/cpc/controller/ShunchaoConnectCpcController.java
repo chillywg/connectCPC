@@ -617,6 +617,7 @@ public class ShunchaoConnectCpcController {
 			String dbPath = CpcUtils.inportFile(paramMap.get("fid").toString(), paramMap.get("tongzhisbh").toString());
 			paramMap.put("qianzhangbj","0");
 			//解压压缩包
+			log.info("解压路径："+dbPath);
 			File unzip = ZipUtil.unzip(new File(dbPath));
 			File[] files = unzip.listFiles();
 			File file = null;
