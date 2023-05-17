@@ -16,9 +16,5 @@ import java.util.Map;
 public interface IShunchaoTrademarkTmsveService{
 
     void tmsveLogin(JSONObject enterpriceAgencyInfo, Map<String,String> cookie) throws IOException;
-
-    List<ShunchaoTrademarkTmsve> tmsveQueryDomesticApplication(String domesticApplyDateBegin, String domesticApplyDateEnd, Map<String,String> cookie) throws IOException;
-    <T> List<Map<String, Object>> analyzing(Class<T> tClass, String appNum, Map<String,String> cookie);
-    Map<String,String>  downloadpdf(Map<String,String> cookie, String docId,String applyNumber, String token) throws IOException;
     Map<String,String> getCookie() throws IOException;
 }
