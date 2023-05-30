@@ -1,6 +1,7 @@
 package com.shunchao.cpc.controller;
 
 import com.shunchao.cpc.model.*;
+import com.shunchao.cpc.service.IShunchaoTrademarkTmsveService;
 import com.shunchao.cpc.util.ChromeDriverUtils;
 import com.shunchao.cpc.util.SeleniumUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -11,19 +12,28 @@ import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.Select;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * @Description: 商标送案提交
+ * @Author: zcs
+ * @Date:   2023-05-26
+ * @Version: V1.0
+ */
 @Slf4j
 @RestController
 @RequestMapping("/trademark/connectTmsve")
-public class ShunchaoTrademarkTmsveController {
-
+public class ShunchaoTrademarkSendController {
+    @Autowired
+    private IShunchaoTrademarkTmsveService shunchaoTrademarkTmsveService;
     private WebDriver driver;
     //String url = "http://www.baidu.com";
     //private String url = "http://wssq.sbj.cnipa.gov.cn:9080/tmsve/";
@@ -993,5 +1003,302 @@ public class ShunchaoTrademarkTmsveController {
         }
         return Result.ok(mark);
     }
+    /**
+     * 功能描述:商标答复提交商标局
+     * 场景:
+     * @Param: [trademarkAnnexList, request]
+     * @Return: java.lang.String
+     * @Author: Ironz
+     * @Date: 2022/1/12 14:05
+     */
+    @GetMapping(value = "/startDfTmsve")
+    public Result<?> startDfTmsve(String trademarkId, HttpServletRequest request, HttpServletResponse response) throws InterruptedException {
+        String token = request.getParameter("token");
+        String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
+        //加载申请人附件数据到本地
+        shunchaoTrademarkTmsveService.getTrademarkApplicantInfo(trademarkId,token);
 
+        //加载申请人基本信息
+        ShunchaoTrademarkApplicant shunchaoTrademarkApplicant =shunchaoTrademarkTmsveService.getDfSendTsvmeData(trademarkId,token);
+                    String rootPath = System.getProperty("exe.path");
+//        String rootPath ="D:\\DUOUEXE\\duou\\";
+        //System.out.println("开始提交程序：=====根目录====="+rootPath);
+        driver = ChromeDriverUtils.beforeM(driver,rootPath);
+        //driver.navigate().to(url);
+        driver.get(url);
+
+        //driver.findElement(By.id("pin")).sendKeys(pinword);
+        driver.findElement(By.id("pin")).sendKeys(shunchaoTrademarkApplicant.getTmsvePin());
+        //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
+        driver.findElement(By.cssSelector("#pinWord")).click();
+        Thread.sleep(3000);
+
+        //移动弹框内滚动条
+        ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+1000);
+
+        //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[1]/div/input")).click();//开发本地电脑可以
+        //driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
+        driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).sendKeys(Keys.ENTER);
+        //driver.findElement(By.cssSelector(".pop-next")).click();//开发本地电脑可以
+        Thread.sleep(2000);
+
+        ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+3000);
+        Thread.sleep(2000);
+
+        //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[2]/div/input[2]")).click();//开发本地电脑可以
+        driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();//ie8可用
+        //driver.findElement(By.cssSelector("input.pop-ok:nth-child(2)")).click();//开发本地电脑可以
+
+        //菜单
+        driver.findElement(By.xpath("//*[@id=\"menu\"]/UL/LI[8]/A")).click();
+        Thread.sleep(2000);
+        driver.findElement(By.xpath("//*[@id=\"menu\"]/ul/li[8]/ul/li[2]/a")).click();
+        //进入iframe
+        driver.switchTo().frame("myframe");
+
+        //申请号
+        driver.findElement(By.id("appNum")).sendKeys(shunchaoTrademarkApplicant.getApplyNumber());
+        driver.findElement(By.id("but1")).click();
+        driver.findElement(By.xpath("//*[@id=\"form1\"]/table[3]/tbody/tr[2]/td[9]/a[2]")).click();
+
+        Thread.sleep(7000);
+        //申请人类型
+        WebElement el1 = driver.findElement(By.id("appTypeId"));
+        Select sel1 = new Select(el1);
+        if ("0".equals(shunchaoTrademarkApplicant.getApplicantType())) {
+            sel1.selectByValue("100012000000000001");
+            //driver.findElement(By.xpath("//SELECT[@id='appTypeId']/option[@value='100012000000000001']")).click();
+        } else if ("1".equals(shunchaoTrademarkApplicant.getApplicantType())) {
+            sel1.selectByValue("100012000000000002");
+        }
+
+        //书式类型
+        WebElement el2 = driver.findElement(By.xpath("//select[@id=\"appGjdq\"]"));
+        Select sel2 = new Select(el2);
+        if ("0".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+            sel2.selectByValue("100011000000000001");
+        } else if ("4".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+            sel2.selectByValue("100011000000000002");
+        }else if ("1".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+            sel2.selectByValue("100011000000000003");
+        }else if ("2".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+            sel2.selectByValue("100011000000000004");
+        }else if ("3".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+            sel2.selectByValue("100011000000000005");
+        }
+
+        //下一步
+        driver.findElement(By.cssSelector("td>label:last-child input")).click();
+
+        //申请人名称
+        driver.findElement(By.id("appCnName")).clear();
+        driver.findElement(By.id("appCnName")).sendKeys(shunchaoTrademarkApplicant.getApplicantName());
+
+        //申请人地址
+        driver.findElement(By.id("appCnAddr")).clear();
+        driver.findElement(By.id("appCnAddr")).sendKeys(shunchaoTrademarkApplicant.getApplicationAddres());
+
+        if ("0".equals(shunchaoTrademarkApplicant.getBookOwnerType())&&
+                ("1".equals(shunchaoTrademarkApplicant.getApplicantType()) || "0".equals(shunchaoTrademarkApplicant.getApplicantType()))) {
+
+            if ("1".equals(shunchaoTrademarkApplicant.getApplicantType())) {
+                //证件名称
+                WebElement ele3 = driver.findElement(By.id("appCertificateId"));
+                Select sel3 = new Select(ele3);
+                if ("0".equals(shunchaoTrademarkApplicant.getIdName())) {
+                    sel3.selectByValue("200005000400000000");
+                } else if ("1".equals(shunchaoTrademarkApplicant.getIdName())) {
+                    sel3.selectByValue("200005000500000000");
+                }else if ("2".equals(shunchaoTrademarkApplicant.getIdName())) {
+                    sel3.selectByValue("200005002100000000");
+                }
+
+                //证件号码
+                driver.findElement(By.id("appCertificateNum")).clear();
+                driver.findElement(By.id("appCertificateNum")).sendKeys(shunchaoTrademarkApplicant.getIdNumber());
+
+                //身份证明文件(中文)
+                driver.findElement(By.cssSelector("#fileSfTr > td:nth-child(2) > input:nth-child(3)")).click();
+                //driver.findElement(By.cssSelector("#fileSfTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                driver.switchTo().frame("ifr_popup0");
+                driver.findElement(By.id("fileSf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0025());
+                driver.findElement(By.id("laodBut")).click();
+                driver.switchTo().parentFrame();
+                driver.findElement(By.id("dialogBoxClose")).click();
+
+            }
+
+            //主体资格证明文件(中文)
+            driver.findElement(By.cssSelector("#fileZtTr > td:nth-child(2) > input:nth-child(3)")).click();
+            //driver.findElement(By.cssSelector("#fileZtTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+            driver.switchTo().frame("ifr_popup0");
+            driver.findElement(By.id("fileZt")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0027());
+            driver.findElement(By.id("laodBut")).click();
+            driver.switchTo().parentFrame();
+            driver.findElement(By.id("dialogBoxClose")).click();
+
+
+            //邮政编码（申请人）
+            driver.findElement(By.id("appContactZip")).clear();
+            driver.findElement(By.id("appContactZip")).sendKeys(shunchaoTrademarkApplicant.getPostalCode());
+
+            //联系人（代理人）
+//            driver.findElement(By.id("appContactPerson")).sendKeys(shunchaoTrademarkApplicant.getContactPerson());
+
+            //联系电话（代理人）
+//            driver.findElement(By.id("appContactTel")).sendKeys(shunchaoTrademarkApplicant.getContactNumber());
+
+            if (Objects.nonNull(shunchaoTrademarkApplicant.getFaxInAreacode())) {
+                //传真（含地区号）
+                driver.findElement(By.id("appContactFax")).clear();
+                driver.findElement(By.id("appContactFax")).sendKeys(shunchaoTrademarkApplicant.getFaxInAreacode());
+            }
+
+        }else {
+
+            //申请人名称(英文)
+            driver.findElement(By.id("appEnName")).clear();
+            driver.findElement(By.id("appEnName")).sendKeys(shunchaoTrademarkApplicant.getApplicantOwnerEnglishname());
+
+            if ("0".equals(shunchaoTrademarkApplicant.getApplicantType())) {
+
+                if ("4".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+                    //主体资格证明文件(中文)
+                    driver.findElement(By.cssSelector("#fileZtTr > td:nth-child(2) > input:nth-child(3)")).click();
+                    //driver.findElement(By.cssSelector("#fileZtTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                    driver.switchTo().frame("ifr_popup0");
+                    driver.findElement(By.id("fileZt")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0027());
+                    driver.findElement(By.id("laodBut")).click();
+                    driver.switchTo().parentFrame();
+                    driver.findElement(By.id("dialogBoxClose")).click();
+
+                    //主体资格证明原文件(外文)
+                    driver.findElement(By.cssSelector("#fileZtEnTr > td:nth-child(2) > input:nth-child(3)")).click();
+                    //driver.findElement(By.cssSelector("#fileZtEnTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                    driver.switchTo().frame("ifr_popup0");
+                    driver.findElement(By.id("fileZtEn")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0028());
+                    driver.findElement(By.id("laodBut")).click();
+                    driver.switchTo().parentFrame();
+                    driver.findElement(By.id("dialogBoxClose")).click();
+
+                }else {
+                    if ("1".equals(shunchaoTrademarkApplicant.getWhetherOriginaldocChinese())) {
+                        //证明文件原件是否为中文
+                        driver.findElement(By.id("fileIsEn1")).click();
+                    } else {
+                        //证明文件原件是否为中文
+                        driver.findElement(By.id("fileIsEn")).click();
+
+                        //主体资格证明原文件(外文)
+                        driver.findElement(By.cssSelector("#fileZtEnTr > td:nth-child(2) > input:nth-child(3)")).click();
+                        //driver.findElement(By.cssSelector("#fileZtEnTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                        driver.switchTo().frame("ifr_popup0");
+                        driver.findElement(By.id("fileZtEn")).sendKeys(rootPath + shunchaoTrademarkApplicant.getSba0028());
+                        driver.findElement(By.id("laodBut")).click();
+                        driver.switchTo().parentFrame();
+                        driver.findElement(By.id("dialogBoxClose")).click();
+                    }
+
+                    //主体资格证明文件(中文)
+                    driver.findElement(By.cssSelector("#fileZtTr > td:nth-child(2) > input:nth-child(3)")).click();
+                    //driver.findElement(By.cssSelector("#fileZtTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                    driver.switchTo().frame("ifr_popup0");
+                    driver.findElement(By.id("fileZt")).sendKeys(rootPath + shunchaoTrademarkApplicant.getSba0027());
+                    driver.findElement(By.id("laodBut")).click();
+                    driver.switchTo().parentFrame();
+                    driver.findElement(By.id("dialogBoxClose")).click();
+                }
+
+            }else {
+
+                //证件名称
+                WebElement ele3 = driver.findElement(By.id("appCertificateId"));
+                Select sel3 = new Select(ele3);
+                if ("0".equals(shunchaoTrademarkApplicant.getIdName())) {
+                    sel3.selectByValue("200005000400000000");
+                } else if ("1".equals(shunchaoTrademarkApplicant.getIdName())) {
+                    sel3.selectByValue("200005000500000000");
+                }else if ("2".equals(shunchaoTrademarkApplicant.getIdName())) {
+                    sel3.selectByValue("200005002100000000");
+                }
+
+                //证件号码
+                driver.findElement(By.id("appCertificateNum")).clear();
+                driver.findElement(By.id("appCertificateNum")).sendKeys(shunchaoTrademarkApplicant.getIdNumber());
+
+                //身份证明文件(中文)
+                driver.findElement(By.cssSelector("#fileSfTr > td:nth-child(2) > input:nth-child(3)")).click();
+                //driver.findElement(By.cssSelector("#fileSfTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                driver.switchTo().frame("ifr_popup0");
+                driver.findElement(By.id("fileSf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0025());
+                driver.findElement(By.id("laodBut")).click();
+                driver.switchTo().parentFrame();
+                driver.findElement(By.id("dialogBoxClose")).click();
+
+                if ("4".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+                    //身份证明原文件(外文)
+                    driver.findElement(By.cssSelector("#fileSfEnTr > td:nth-child(2) > input:nth-child(3)")).click();
+                    //driver.findElement(By.cssSelector("#fileSfEnTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                    driver.switchTo().frame("ifr_popup0");
+                    driver.findElement(By.id("fileSfEn")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0026());
+                    driver.findElement(By.id("laodBut")).click();
+                    driver.switchTo().parentFrame();
+                    driver.findElement(By.id("dialogBoxClose")).click();
+                }else {
+                    if ("0".equals(shunchaoTrademarkApplicant.getWhetherOriginaldocChinese())) {
+
+                        //证明文件原件是否为中文
+                        driver.findElement(By.id("fileIsEn")).click();
+
+                        //身份证明原文件(外文)
+                        driver.findElement(By.cssSelector("#fileSfEnTr > td:nth-child(2) > input:nth-child(3)")).click();
+                        //driver.findElement(By.cssSelector("#fileSfEnTr>td.td_2 input:nth-of-type(2)")).click();//开发本地电脑可以
+                        driver.switchTo().frame("ifr_popup0");
+                        driver.findElement(By.id("fileSfEn")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0026());
+                        driver.findElement(By.id("laodBut")).click();
+                        driver.switchTo().parentFrame();
+                        driver.findElement(By.id("dialogBoxClose")).click();
+
+                    }else {
+                        //证明文件原件是否为中文
+                        driver.findElement(By.id("fileIsEn1")).click();
+                    }
+                }
+
+            }
+
+            if ("4".equals(shunchaoTrademarkApplicant.getBookOwnerType())) {
+                //国家和地区
+                new Select(driver.findElement(By.id("appCrtyId"))).selectByValue(shunchaoTrademarkApplicant.getCountryArea());
+            }
+
+            //申请人地址(英文)
+            driver.findElement(By.id("appEnAddr")).clear();
+            driver.findElement(By.id("appEnAddr")).sendKeys(shunchaoTrademarkApplicant.getApplicationAddressEnglish());
+
+            //申请人国内接收人名称
+            driver.findElement(By.id("acceptPerson")).clear();
+            driver.findElement(By.id("acceptPerson")).sendKeys(shunchaoTrademarkApplicant.getApplicationMainlandRecipientname());
+
+            //接收人地址
+            driver.findElement(By.id("acceptAddr")).clear();
+            driver.findElement(By.id("acceptAddr")).sendKeys(shunchaoTrademarkApplicant.getRecipientAddress());
+
+            //接收人邮编
+            driver.findElement(By.id("acceptZip")).clear();
+            driver.findElement(By.id("acceptZip")).sendKeys(shunchaoTrademarkApplicant.getRecipientPostcode());
+
+        }
+        //下一步
+        driver.findElements(By.cssSelector("td>label:last-child input")).get(1).click();
+        //下一步
+        driver.findElements(By.cssSelector("td>label:last-child input")).get(2).click();
+        //下一步
+        driver.findElements(By.cssSelector("td>label:last-child input")).get(3).click();
+        //下一步
+        driver.findElements(By.cssSelector("td>label:last-child input")).get(4).click();
+        //下一步
+        driver.findElements(By.cssSelector("td>label:last-child input")).get(5).click();
+        return Result.ok();
+    }
 }

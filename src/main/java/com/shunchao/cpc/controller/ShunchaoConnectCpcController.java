@@ -63,7 +63,7 @@ public class ShunchaoConnectCpcController {
 
 
 	/**
-	 * 功能描述:加载商标局官网所需附件
+	 * 功能描述:商标注册加载商标局官网所需附件
 	 * 场景:
 	 * @Param: [trademarkAnnexList, request]
 	 * @Return: java.lang.String

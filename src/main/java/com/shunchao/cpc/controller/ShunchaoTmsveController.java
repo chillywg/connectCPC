@@ -4,6 +4,7 @@ import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSONObject;
 import com.shunchao.cpc.model.Result;
 import com.shunchao.cpc.service.IShunchaoTrademarkTmsveService;
+import com.shunchao.cpc.util.TrademarkUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,9 @@ import java.util.*;
 
 
 /**
- * @Description: 测试
- * @Author: chilly
- * @Date:   2019-11-7
+ * @Description: 商标获取官文
+ * @Author: zcs
+ * @Date:   2023-05-26
  * @Version: V1.0
  */
 @Slf4j
@@ -29,9 +30,6 @@ import java.util.*;
 public class ShunchaoTmsveController {
 	@Value(value = "${connecturl}")
 	private String connecturl;
-	@Autowired
-	private IShunchaoTrademarkTmsveService shunchaoTrademarkTmsveService;
-
 
 	@GetMapping(value = "/excuteQueryDomestic")
 	public String excuteQueryDomestic(String callback, String enterpriceAgencyId,
@@ -47,11 +45,11 @@ public class ShunchaoTmsveController {
 				String enterInfoAndCookie = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getEnterInfo").
 						header("X-Access-Token", token).form(paramMap).execute().body();
 				HttpRequest.closeCookie();
-				Map<String,String> cookie =shunchaoTrademarkTmsveService.getCookie();
+				Map<String,String> cookie = TrademarkUtils.getCookie();
 				JSONObject json1= JSONObject.parseObject(enterInfoAndCookie);
 				JSONObject resultObject = (JSONObject) json1.get("result");
 				JSONObject enterpriceAgencyInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
-				shunchaoTrademarkTmsveService.tmsveLogin(enterpriceAgencyInfo,cookie);
+				TrademarkUtils.tmsveLogin(enterpriceAgencyInfo,cookie);
 
 				paramMap.put("cookie",cookie.toString());
 				HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getTrademarkTmsve").
