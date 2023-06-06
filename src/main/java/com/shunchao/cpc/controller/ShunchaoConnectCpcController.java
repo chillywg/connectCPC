@@ -607,7 +607,7 @@ public class ShunchaoConnectCpcController {
 
 		String fawenrEnd ="";
 		//fawenrEnd = new SimpleDateFormat("yyyy-MM-dd").format(new Date());//结束时间
-		String xiazaizt = "";//("":全部，1：待下载，2：已下载)
+		String xiazaizt = "1";//("":全部，1：待下载，2：已下载)
 		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate(fawenrStart,fawenrEnd,xiazaizt,"");//注:开始时间和结束时间必须同时传值
 		int fail = 0;//失败总数
 		int count = 0;//常规官文总数
