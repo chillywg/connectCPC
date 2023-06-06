@@ -29,9 +29,9 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
     private IShuncaoConnectService shuncaoConnectService;
 
     @Override
-    public void getTrademarkApplicantInfo(String trademarkId, String token) {
+    public void getTrademarkApplicantInfo(String workbenchId, String token) {
         HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("trademarkId", trademarkId);
+        paramMap.put("workbenchId", workbenchId);
         //获取代理机构信息
         String trademarkApplicantData = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkAnnex/getTrademarkApplicantData").
                 header("X-Access-Token", token).form(paramMap).execute().body();
@@ -42,10 +42,10 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
     }
 
     @Override
-    public ShunchaoTrademarkApplicant getDfSendTsvmeData(String trademarkId, String token) {
+    public ShunchaoTrademarkApplicant getDfSendTsvmeData(String workbenchId, String token) {
 
         HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("trademarkId", trademarkId);
+        paramMap.put("workbenchId", workbenchId);
         //获取代理机构信息
         String dfSendTsvmeData = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkSendcase/getDfSendTsvmeData").
                 header("X-Access-Token", token).form(paramMap).execute().body();

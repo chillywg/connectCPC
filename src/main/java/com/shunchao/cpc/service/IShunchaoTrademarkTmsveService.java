@@ -15,7 +15,7 @@ import java.util.Map;
  * @Version: V1.0
  */
 public interface IShunchaoTrademarkTmsveService{
-    void getTrademarkApplicantInfo(String trademarkId, String token);
+    void getTrademarkApplicantInfo(String workbenchId, String token);
 
-    ShunchaoTrademarkApplicant getDfSendTsvmeData(String trademarkId, String token);
+    ShunchaoTrademarkApplicant getDfSendTsvmeData(String workbenchId, String token);
 }

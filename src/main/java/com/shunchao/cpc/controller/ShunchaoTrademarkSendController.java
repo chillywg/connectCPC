@@ -1012,14 +1012,14 @@ public class ShunchaoTrademarkSendController {
      * @Date: 2022/1/12 14:05
      */
     @GetMapping(value = "/startDfTmsve")
-    public Result<?> startDfTmsve(String trademarkId, HttpServletRequest request, HttpServletResponse response) throws InterruptedException {
+    public Result<?> startDfTmsve(String workbenchId, HttpServletRequest request, HttpServletResponse response) throws InterruptedException {
         String token = request.getParameter("token");
         String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
         //加载申请人附件数据到本地
-        shunchaoTrademarkTmsveService.getTrademarkApplicantInfo(trademarkId,token);
+        shunchaoTrademarkTmsveService.getTrademarkApplicantInfo(workbenchId,token);
 
         //加载申请人基本信息
-        ShunchaoTrademarkApplicant shunchaoTrademarkApplicant =shunchaoTrademarkTmsveService.getDfSendTsvmeData(trademarkId,token);
+        ShunchaoTrademarkApplicant shunchaoTrademarkApplicant =shunchaoTrademarkTmsveService.getDfSendTsvmeData(workbenchId,token);
                     String rootPath = System.getProperty("exe.path");
 //        String rootPath ="D:\\DUOUEXE\\duou\\";
         //System.out.println("开始提交程序：=====根目录====="+rootPath);
