@@ -65,52 +65,48 @@ public class CpcUtils {
         Map<String,Object> map = (Map) result.getResult();
         return map;
     }
-    public static String inportFile(String ids,String TONGZHISBH){
+    public static String inportFile(String ids,String TONGZHISBH) throws Exception {
         String body="[\""+ids+"\"]";
         String dbPath ="";
         BufferedInputStream bufferedInputStream =null;
-        try{
-            Jsoup.connect("http://localhost:9999/certs/download/file")
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
-                    .header("Accept","application/json, text/plain, */*")
-                    .header("Accept-Encoding","gzip, deflate, br")
-                    .header("Connection", "keep-alive")
-                    .header("Content-Type","application/json;charset=UTF-8")
-                    .requestBody(body)
-                    .method(Connection.Method.POST).ignoreContentType(true).execute();;
-            String base64 = Base64.getEncoder().encodeToString(TONGZHISBH.getBytes("utf-8"));
-            Connection.Response response = Jsoup.connect("http://localhost:9999/certs/export/file/" + base64)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
-                    .header("Accept","application/json, text/plain, */*")
-                    .header("Accept-Encoding","gzip, deflate, br")
-                    .header("Connection", "keep-alive")
-                    .header("Content-Type","application/json;charset=UTF-8")
-                    .maxBodySize(0)
-                    .method(Connection.Method.GET).ignoreContentType(true).execute();
-            bufferedInputStream=response.bodyStream();
-            log.info("下载流："+bufferedInputStream.toString());
-            String ctxPath = "D://upFiles//";
-            String fileName = null;
-            String bizPath = "cases" + File.separator + "ceshi" +File.separator + new SimpleDateFormat("yyyyMMdd").format(new Date())+File.separator + TONGZHISBH;
-            File file = new File(ctxPath + bizPath);
-            if(!file.exists()){
-                file.mkdirs();//创建文件目录
-            }
-            fileName = TONGZHISBH +".zip";//根据时间重命名文件文件名
-            FileOutputStream fileOutputStream = new FileOutputStream(new File(file.getPath() + File.separator + fileName));
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
-
-            dbPath = ctxPath+bizPath + File.separator +fileName;//数据库存储路径
-            if (dbPath.contains("\\")) {
-                dbPath = dbPath.replace("\\", "/");
-            }
-            bufferedInputStream.close();
-            fileOutputStream.close();
-            bufferedOutputStream.close();
-        }catch (IOException e){
-            log.info(e.getMessage(),e);
+        Jsoup.connect("http://localhost:9999/certs/download/file")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
+                .header("Accept","application/json, text/plain, */*")
+                .header("Accept-Encoding","gzip, deflate, br")
+                .header("Connection", "keep-alive")
+                .header("Content-Type","application/json;charset=UTF-8")
+                .requestBody(body)
+                .method(Connection.Method.POST).ignoreContentType(true).execute();
+        String base64 = Base64.getEncoder().encodeToString(TONGZHISBH.getBytes("utf-8"));
+        Connection.Response response = Jsoup.connect("http://localhost:9999/certs/export/file/" + base64)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
+                .header("Accept","application/json, text/plain, */*")
+                .header("Accept-Encoding","gzip, deflate, br")
+                .header("Connection", "keep-alive")
+                .header("Content-Type","application/json;charset=UTF-8")
+                .maxBodySize(0)
+                .method(Connection.Method.GET).ignoreContentType(true).execute();
+        bufferedInputStream=response.bodyStream();
+        log.info("下载流："+bufferedInputStream.toString());
+        String ctxPath = "D://upFiles//";
+        String fileName = null;
+        String bizPath = "cases" + File.separator + "ceshi" +File.separator + new SimpleDateFormat("yyyyMMdd").format(new Date())+File.separator + TONGZHISBH;
+        File file = new File(ctxPath + bizPath);
+        if(!file.exists()){
+            file.mkdirs();//创建文件目录
         }
+        fileName = TONGZHISBH +".zip";//根据时间重命名文件文件名
+        FileOutputStream fileOutputStream = new FileOutputStream(new File(file.getPath() + File.separator + fileName));
+        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+        FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
+
+        dbPath = ctxPath+bizPath + File.separator +fileName;//数据库存储路径
+        if (dbPath.contains("\\")) {
+            dbPath = dbPath.replace("\\", "/");
+        }
+        bufferedInputStream.close();
+        fileOutputStream.close();
+        bufferedOutputStream.close();
         return dbPath;
     }
 

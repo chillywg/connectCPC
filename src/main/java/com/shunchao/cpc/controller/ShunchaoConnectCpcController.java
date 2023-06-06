@@ -34,10 +34,7 @@ import org.w3c.dom.Document;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.xpath.XPathConstants;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -604,20 +601,34 @@ public class ShunchaoConnectCpcController {
 		}
 	}
 	@GetMapping(value = "/getNotices4", produces = "application/jsonp; charset=utf-8")
-	public String getPatentCertificate(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws Exception {
-//		String fawenrStart= "2023-04-11";//开始时间
+	public String getPatentCertificate(String callback, @RequestParam(name = "token") String token, HttpServletRequest req) throws IOException {
 		String fawenrStart= "";
-//		String fawenrEnd = new SimpleDateFormat("yyyy-MM-dd").format(new Date());//结束时间
+		//fawenrStart= "2023-04-11";//开始时间
+
 		String fawenrEnd ="";
-		String xiazaizt = "1";//("":全部，1：待下载，2：已下载)
+		//fawenrEnd = new SimpleDateFormat("yyyy-MM-dd").format(new Date());//结束时间
+		String xiazaizt = "";//("":全部，1：待下载，2：已下载)
 		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate(fawenrStart,fawenrEnd,xiazaizt,"");//注:开始时间和结束时间必须同时传值
 		int fail = 0;//失败总数
 		int count = 0;//常规官文总数
 		for(Map<String, Object> paramMap : maps){
-			String dbPath = CpcUtils.inportFile(paramMap.get("fid").toString(), paramMap.get("tongzhisbh").toString());
+			String dbPath = "";
+			try{
+				dbPath=CpcUtils.inportFile(paramMap.get("fid").toString(), paramMap.get("tongzhisbh").toString());
+			}catch (Exception e){
+				log.info("申请号："+paramMap.get("shenqingh").toString(),e);
+				fail++;
+				log.info("通知书编号：" + paramMap.get("tongzhisbh").toString() + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+				break;
+			}
 			paramMap.put("qianzhangbj","0");
 			//解压压缩包
 			log.info("解压路径："+dbPath);
+			if(StringUtils.isBlank(dbPath)){
+				fail++;
+				log.info("通知书编号：" + paramMap.get("tongzhisbh").toString() + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+				break;
+			}
 			File unzip = ZipUtil.unzip(new File(dbPath));
 			File[] files = unzip.listFiles();
 			File file = null;
