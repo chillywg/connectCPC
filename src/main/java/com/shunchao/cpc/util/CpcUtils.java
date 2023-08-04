@@ -69,7 +69,7 @@ public class CpcUtils {
         String body="[\""+ids+"\"]";
         String dbPath ="";
         BufferedInputStream bufferedInputStream =null;
-        Jsoup.connect("http://localhost:9999/certs/download/file").timeout(60000)
+        Jsoup.connect("http://localhost:9999/certs/download/file").timeout(100000)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
                 .header("Accept","application/json, text/plain, */*")
                 .header("Accept-Encoding","gzip, deflate, br")
