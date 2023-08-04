@@ -4,6 +4,7 @@ import cn.hutool.http.HttpRequest;
 import com.alibaba.fastjson.JSONObject;
 import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
 import com.shunchao.cpc.model.ShunchaoTrademarkApplicant;
+import com.shunchao.cpc.model.ShunchaoTrademarkZrZy;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.service.IShunchaoTrademarkTmsveService;
 import lombok.extern.slf4j.Slf4j;
@@ -53,5 +54,33 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
         JSONObject resultJson =(JSONObject) tmsveJson.get("result");
         ShunchaoTrademarkApplicant shunchaoTrademarkApplicant= JSONObject.toJavaObject(resultJson, ShunchaoTrademarkApplicant.class);
         return shunchaoTrademarkApplicant;
+    }
+
+
+    @Override
+    public void connectTmsveDownloadData(String trademarkId, String token) {
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("trademarkId", trademarkId);
+        //获取代理机构信息
+        String trademarkApplicantData = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkAnnex/connectTmsveDownloadData").
+                header("X-Access-Token", token).form(paramMap).execute().body();
+        JSONObject tmsveJson= JSONObject.parseObject(trademarkApplicantData);
+        String resultJson =tmsveJson.get("result").toString();
+        List<ShunchaoTrademarkAnnex> shunchaoTrademarkAnnexList = JSONObject.parseArray(resultJson, ShunchaoTrademarkAnnex.class);
+        String mark = shuncaoConnectService.getTrademarkAnnex(shunchaoTrademarkAnnexList,token);
+    }
+
+    @Override
+    public ShunchaoTrademarkZrZy getZYSendTsvmeData(String trademarkId, String token) {
+
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("trademarkId", trademarkId);
+        //获取代理机构信息
+        String dfSendTsvmeData = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkSendcase/getZYSendTsvmeData").
+                header("X-Access-Token", token).form(paramMap).execute().body();
+        JSONObject tmsveJson= JSONObject.parseObject(dfSendTsvmeData);
+        JSONObject resultJson =(JSONObject) tmsveJson.get("result");
+        ShunchaoTrademarkZrZy shunchaoTrademarkZrZy= JSONObject.toJavaObject(resultJson, ShunchaoTrademarkZrZy.class);
+        return shunchaoTrademarkZrZy;
     }
 }

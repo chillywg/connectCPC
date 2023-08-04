@@ -3,6 +3,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.shunchao.cpc.model.ShunchaoTmsveAnnotation;
 import com.shunchao.cpc.model.ShunchaoTrademarkApplicant;
 import com.shunchao.cpc.model.ShunchaoTrademarkTmsve;
+import com.shunchao.cpc.model.ShunchaoTrademarkZrZy;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,4 +19,9 @@ public interface IShunchaoTrademarkTmsveService{
     void getTrademarkApplicantInfo(String workbenchId, String token);
 
     ShunchaoTrademarkApplicant getDfSendTsvmeData(String workbenchId, String token);
+
+    void connectTmsveDownloadData(String trademarkId, String token);
+
+    ShunchaoTrademarkZrZy getZYSendTsvmeData(String trademarkId, String token);
+
 }
