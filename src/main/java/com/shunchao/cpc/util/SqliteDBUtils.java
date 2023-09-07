@@ -16,7 +16,6 @@ import java.util.*;
 @Component
 @Slf4j
 public class SqliteDBUtils {
-	private static Connection connection;
 	/**
 	 *
 	 * @Title:	getConnection
@@ -29,7 +28,7 @@ public class SqliteDBUtils {
 		Map map = System.getenv();
 		String cnipa_client_home = map.get("CNIPA_CLIENT_HOME").toString();
 		Connection conn = null;
-		String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
+//		String dataPath = CpcPathInComputer.getCpcDataPathWindowsComputer();
 //		Properties prop = new Properties();
 //        prop.put("charSet", accessDBConfig.charSet);
 //        prop.put("user", accessDBConfig.user);
@@ -42,19 +41,14 @@ public class SqliteDBUtils {
 			e.printStackTrace();
 			log.info("获取数据库连接失败，" + e.getMessage());
 		}
-        connection = conn;
         return conn;
 	}
 
 	public static List<Map<String, Object>> queryMapListBySql (String sql, String[] column, String[] column2) throws Exception {
+		Connection connection = getConnection();
 		if (connection == null) {
-			connection = getConnection();
-
-			if (connection == null) {
-				throw new Exception ("无法获取sqlite数据库连接");
-			}
+			throw new Exception ("无法获取sqlite数据库连接");
 		}
-
 		Statement statement = connection.createStatement();
         ResultSet result = statement.executeQuery(sql);
 //        ResultSetMetaData metaData = result.getMetaData();
@@ -73,17 +67,13 @@ public class SqliteDBUtils {
 		result.close();
 		statement.close();
 		connection.close();
-		connection = null;
         return resultList;
 	}
 
 	public static int update (String sql) throws Exception {
+		Connection connection = getConnection();
 		if (connection == null) {
-			connection = getConnection();
-
-			if (connection == null) {
-				throw new Exception ("无法获取sqlite数据库连接");
-			}
+			throw new Exception ("无法获取sqlite数据库连接");
 		}
 
 		Statement statement = connection.createStatement();
@@ -92,7 +82,6 @@ public class SqliteDBUtils {
 		List<Map<String, Object>> resultList = new ArrayList<>();
 		statement.close();
 		connection.close();
-		connection = null;
 		return executeUpdate;
 	}
 
