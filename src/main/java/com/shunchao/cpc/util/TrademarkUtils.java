@@ -72,6 +72,7 @@ public class TrademarkUtils {
                 tmsMap.put("caCertSN","");
                 tmsMap.put("containerName","");
                 tmsMap.put("tmurl","https://wssq.sbj.cnipa.gov.cn:9443/tmsve/");
+                tmsMap.put("cipher",enterpriseInfo.getString("tmsveCipher"));
                 tmsMap.put("agreeProt","on");
                 tmsMap.put("qrid","");
                 tmsMap.put("uniscid","");
