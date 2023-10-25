@@ -67,6 +67,7 @@ public class ShunchaoTrademarkSendController {
             driver.get(url);
             //driver.findElement(By.id("pin")).sendKeys(pinword);
             driver.findElement(By.id("pin")).sendKeys(trademarkApplicantProduct.getTmsvePin());
+            driver.findElement(By.id("cipher")).sendKeys(trademarkApplicantProduct.getTmsveCipher());
             //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
             driver.findElement(By.cssSelector("#pinWord")).click();
             Thread.sleep(5000);
@@ -1029,6 +1030,7 @@ public class ShunchaoTrademarkSendController {
 
         //driver.findElement(By.id("pin")).sendKeys(pinword);
         driver.findElement(By.id("pin")).sendKeys(shunchaoTrademarkApplicant.getTmsvePin());
+        driver.findElement(By.id("cipher")).sendKeys(shunchaoTrademarkApplicant.getTmsveCipher());
         //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
         driver.findElement(By.cssSelector("#pinWord")).click();
         Thread.sleep(3000);
@@ -1329,6 +1331,7 @@ public class ShunchaoTrademarkSendController {
 
         //driver.findElement(By.id("pin")).sendKeys(pinword);
         driver.findElement(By.id("pin")).sendKeys(shunchaoTrademarkZrZy.getTmsvePin());
+        driver.findElement(By.id("cipher")).sendKeys(shunchaoTrademarkZrZy.getTmsveCipher());
         //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
         driver.findElement(By.cssSelector("#pinWord")).click();
         Thread.sleep(3000);

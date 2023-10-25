@@ -160,6 +160,9 @@ public class ShunchaoTrademarkZrZy {
     /**商标代理机构PIN码*/
     private String tmsvePin;
 
+    /*商标代理机构密码*/
+    private String tmsveCipher;
+
     /**代理人姓名*/
     private String agentName;
 

@@ -77,6 +77,8 @@ public class ShunchaoTrademarkApplicant {
     private String sba0033;
     /**商标代理机构PIN码*/
     private String tmsvePin;
+    /*商标代理机构密码*/
+    private String tmsveCipher;
     /**商标申请号*/
     private String applyNumber;
     /**上传文件的语言类型（1：中文，2：外文）*/

@@ -223,6 +223,9 @@ public class ShunchaoTrademarkApplicantProduct {
     /*商标代理机构PIN码*/
     private String tmsvePin;
 
+    /*商标代理机构密码*/
+    private String tmsveCipher;
+
     /*邮政编码（代理人）*/
     private String agentPostalCode;
 
