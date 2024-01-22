@@ -12,14 +12,12 @@ import com.healthmarketscience.jackcess.DatabaseBuilder;
 import com.healthmarketscience.jackcess.Row;
 import com.healthmarketscience.jackcess.Table;
 import com.shunchao.config.CpcPathInComputer;
-import com.shunchao.cpc.model.Result;
-import com.shunchao.cpc.model.ShunchaoAttachmentInfo;
-import com.shunchao.cpc.model.ShunchaoCaseInfo;
-import com.shunchao.cpc.model.ShunchaoTrademarkAnnex;
+import com.shunchao.cpc.model.*;
 import com.shunchao.cpc.service.IShuncaoConnectService;
 import com.shunchao.cpc.util.CpcUtils;
 import com.shunchao.cpc.util.DBHelper;
 import com.shunchao.cpc.util.SqliteDBUtils;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -668,6 +666,121 @@ public class ShunchaoConnectCpcController {
 			}
 		}
 		String result = "成功获取证书：" + count +  "，<br>获取失败总数：" + fail;//<br>标签由前端处理换行
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok(result));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.ok(result));
+		}
+	}
+
+
+	@ApiOperation("获取通知书和回执列表信息")
+	@PostMapping({"/getDocsList"})
+	public Result<?> getDocsList(@RequestBody DocListReqDTO docListReqDTO, HttpServletResponse response) throws IOException {
+		String bobyString = "{\"system\":\"" + docListReqDTO.getSystem()
+				+ "\",\"type\":\""+docListReqDTO.getType()
+				+"\",\"applicationnumber\":\""+ docListReqDTO.getApplicationnumber()
+				+"\",\"famingczmc\":\""+docListReqDTO.getFamingczmc()
+				+"\",\"tongzhismc\":\""+docListReqDTO.getTongzhismc()
+				+"\",\"fawenxlh\":\""+docListReqDTO.getFawenxlh()
+				+"\",\"xiazaizt\":"+docListReqDTO.getXiazaizt()
+				+",\"reqType\":\""+docListReqDTO.getReqType();
+				if("1".equals(docListReqDTO.getIsDownload())){
+					bobyString =bobyString +"\",\"isDownload\":\""+docListReqDTO.getIsDownload();
+				}
+
+		bobyString =bobyString+"\",\"size\":"+docListReqDTO.getSize()
+				+",\"current\":"+docListReqDTO.getCurrent()+"}";
+		org.jsoup.Connection.Response response2 = Jsoup.connect("http://localhost:9999/docs/v1/list")
+				.header("Content-Type", "application/json;charset=UTF-8")
+				.requestBody(bobyString).method(org.jsoup.Connection.Method.POST).ignoreContentType(true).execute();
+		JSONObject jsonObject = JSONObject.parseObject(response2.body());
+		JSONObject repData = (JSONObject) jsonObject.get("result");
+		return Result.ok(repData);
+	}
+
+
+	@ApiOperation("通知书文件获取")
+	@PostMapping({"/getFileDownload"})
+	public String getFileDownload(@RequestBody List<DocListReqDTO> DocListReqDTO,HttpServletRequest request,HttpServletResponse response) throws IOException {
+		String token = request.getParameter("token");
+		String callback = request.getParameter("callback");
+		int fail = 0;//失败总数
+		int count = 0;//常规官文总数
+		for(DocListReqDTO  docListReqDTO: DocListReqDTO){
+			Map<String, Object> paramMap =new HashMap<>();
+			paramMap.put("shenqingh",docListReqDTO.getCnApplicationnumber());
+			paramMap.put("fawenxlh",StringUtils.isNotBlank(docListReqDTO.getFawenxlh())?docListReqDTO.getFawenxlh():docListReqDTO.getName());
+			paramMap.put("famingmc",docListReqDTO.getFamingczmc());
+			paramMap.put("tongzhisbh",docListReqDTO.getName());
+			paramMap.put("tongzhismc",docListReqDTO.getTongzhismc());
+			paramMap.put("tongzhisdm",docListReqDTO.getCode());
+			paramMap.put("fawenrq",docListReqDTO.getDianzifwrq());
+
+			String tongzhishubh = StringUtils.isNotBlank(docListReqDTO.getFawenxlh())?docListReqDTO.getFawenxlh():docListReqDTO.getName();
+			String dbPath = "";
+			try{
+				dbPath=CpcUtils.inportTzsFile(docListReqDTO.getFid(),tongzhishubh);
+			}catch (Exception e){
+				log.info("申请号："+docListReqDTO.getApplicationnumber(),e);
+				fail++;
+				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+				break;
+			}
+			paramMap.put("qianzhangbj","0");
+			//解压压缩包
+			log.info("解压路径："+dbPath);
+			if(StringUtils.isBlank(dbPath)){
+				fail++;
+				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+				break;
+			}
+			File unzip = ZipUtil.unzip(new File(dbPath));
+			File[] files = unzip.listFiles();
+			File file = null;
+			for (File f : files) {
+				if (f.isFile() && f.getPath().contains(tongzhishubh)) {
+					file = f;
+					break;
+				}
+			}
+			File xmlFile =new File(file.getPath().replace(".zip","")+"\\list.xml");
+			ZipUtil.unzip(file);
+			Document docResult = XmlUtil.readXML(xmlFile);
+			//获取官文中内部编号
+			String neibubh = XmlUtil.getByXPath("//data-bus/TONGZHISXJ/SHUXINGXX/NEIBUBH", docResult, XPathConstants.STRING).toString();
+			paramMap.put("neibubh",neibubh);
+			paramMap.put("qianzhangbj","0");
+			if (file.exists()) {
+//                paramMap.put("file", ZipUtil.zip(file));
+				paramMap.put("file", file);
+				HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+						header("X-Access-Token", token).form(paramMap).execute();
+				String body = execute.body();
+				JSONObject jsonObject = JSONObject.parseObject(body);
+				Boolean success = (Boolean) jsonObject.get("success");
+				Integer code = (Integer) jsonObject.get("code");
+				if (!success) {
+					if (40002 == code) {
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+					}else if(40003 == code){
+						fail++;
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
+					}else if(40006 == code){
+						fail++;
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
+					}else {
+						fail++;
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+					}
+				} else {
+					count++;
+					log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取成功，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+				}
+			}
+		}
+		String result = "成功获取官文：" + count +  "，<br>获取失败总数：" + fail;//<br>标签由前端处理换行
 		if (StringUtils.isNotBlank(callback)) {
 			String string = JSONObject.toJSONString(Result.ok(result));
 			return callback + "(" + string + ")";
