@@ -683,8 +683,17 @@ public class ShunchaoConnectCpcController {
 				+"\",\"applicationnumber\":\""+ docListReqDTO.getApplicationnumber()
 				+"\",\"famingczmc\":\""+docListReqDTO.getFamingczmc()
 				+"\",\"tongzhismc\":\""+docListReqDTO.getTongzhismc()
-				+"\",\"fawenxlh\":\""+docListReqDTO.getFawenxlh()
-				+"\",\"xiazaizt\":"+docListReqDTO.getXiazaizt()
+				+"\",\"fawenxlh\":\""+docListReqDTO.getFawenxlh();
+				if(StringUtils.isNotBlank(docListReqDTO.getDljgnbbh())){
+					bobyString =bobyString +"\",\"dljgnbbh\":\""+docListReqDTO.getDljgnbbh();
+				}
+				if(StringUtils.isNotBlank(docListReqDTO.getFawenrStart())){
+					bobyString =bobyString +"\",\"fawenrStart\":\""+docListReqDTO.getFawenrStart();
+				}
+				if(StringUtils.isNotBlank(docListReqDTO.getFawenrEnd())){
+					bobyString =bobyString +"\",\"fawenrEnd\":\""+docListReqDTO.getFawenrEnd();
+				}
+		bobyString =bobyString+"\",\"xiazaizt\":"+docListReqDTO.getXiazaizt()
 				+",\"reqType\":\""+docListReqDTO.getReqType();
 				if("1".equals(docListReqDTO.getIsDownload())){
 					bobyString =bobyString +"\",\"isDownload\":\""+docListReqDTO.getIsDownload();
