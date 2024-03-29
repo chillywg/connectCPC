@@ -3,6 +3,7 @@ package com.shunchao.cpc.util;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
@@ -46,7 +47,7 @@ public class TrademarkUtils {
      * @Author: Ironz
      * @Date: 2022/4/13 14:17
      */
-    public static void tmsveLogin(JSONObject enterpriseInfo, Map<String,String> cookie) throws IOException {
+    public static Map<String,String> tmsveLogin(JSONObject enterpriseInfo, Map<String,String> cookie) throws IOException {
         if (Objects.nonNull(enterpriseInfo)) {
             if (Objects.nonNull(enterpriseInfo.getString("tmsvePin")) && Objects.nonNull(enterpriseInfo.getString("tmsveSignCert")) && Objects.nonNull(enterpriseInfo.getString("tmsveSignData"))) {
 
@@ -82,9 +83,14 @@ public class TrademarkUtils {
                 Connection.Response response = Jsoup.connect("https://wssq.sbj.cnipa.gov.cn:9443/tmsve/wssqsy_getCayzDl.xhtml").cookies( cookie).data(tmsMap)
                         .method(Connection.Method.POST).ignoreContentType(true).execute();
                 String body = response.body();
-                System.out.println("商标网登录");
+                Map<String,String> JSESSIONID = response.cookies();
+                if(StringUtils.isNotBlank(JSESSIONID.get("JSESSIONID"))){
+                    cookie.put("JSESSIONID",JSESSIONID.get("JSESSIONID"));
+                }
+                System.out.println("商标网登录cookie:"+cookie.toString());
             }
         }
+        return  cookie;
     }
 
 }
