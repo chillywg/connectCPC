@@ -734,7 +734,7 @@ public class ShunchaoConnectCpcController {
 			}catch (Exception e){
 				log.info("申请号："+docListReqDTO.getApplicationnumber(),e);
 				fail++;
-				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
 				break;
 			}
 			paramMap.put("qianzhangbj","0");
@@ -742,7 +742,7 @@ public class ShunchaoConnectCpcController {
 			log.info("解压路径："+dbPath);
 			if(StringUtils.isBlank(dbPath)){
 				fail++;
-				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
 				break;
 			}
 			File unzip = ZipUtil.unzip(new File(dbPath));
@@ -772,20 +772,20 @@ public class ShunchaoConnectCpcController {
 				Integer code = (Integer) jsonObject.get("code");
 				if (!success) {
 					if (40002 == code) {
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
 					}else if(40003 == code){
 						fail++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
 					}else if(40006 == code){
 						fail++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
 					}else {
 						fail++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
 					}
 				} else {
 					count++;
-					log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取成功，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+					log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
 				}
 			}
 		}
