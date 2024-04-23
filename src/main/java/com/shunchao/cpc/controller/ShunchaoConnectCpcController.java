@@ -712,7 +712,7 @@ public class ShunchaoConnectCpcController {
 
 	@ApiOperation("通知书文件获取")
 	@PostMapping({"/getFileDownload"})
-	public String getFileDownload(@RequestBody List<DocListReqDTO> DocListReqDTO,HttpServletRequest request,HttpServletResponse response) throws IOException {
+	public String getFileDownload(@RequestBody List<DocListReqDTO> DocListReqDTO,HttpServletRequest request,HttpServletResponse response) {
 		String token = request.getParameter("token");
 		String callback = request.getParameter("callback");
 		int fail = 0;//失败总数
@@ -731,62 +731,62 @@ public class ShunchaoConnectCpcController {
 			String dbPath = "";
 			try{
 				dbPath=CpcUtils.inportTzsFile(docListReqDTO.getFid(),tongzhishubh);
+				paramMap.put("qianzhangbj","0");
+				//解压压缩包
+				log.info("解压路径："+dbPath);
+				if(StringUtils.isBlank(dbPath)){
+					fail++;
+					log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+					break;
+				}
+				File unzip = ZipUtil.unzip(new File(dbPath));
+				File[] files = unzip.listFiles();
+				File file = null;
+				for (File f : files) {
+					if (f.isFile() && f.getPath().contains(tongzhishubh)) {
+						file = f;
+						break;
+					}
+				}
+				File xmlFile =new File(file.getPath().replace(".zip","")+"\\list.xml");
+				ZipUtil.unzip(file);
+				Document docResult = XmlUtil.readXML(xmlFile);
+				//获取官文中内部编号
+				String neibubh = XmlUtil.getByXPath("//data-bus/TONGZHISXJ/SHUXINGXX/NEIBUBH", docResult, XPathConstants.STRING).toString();
+				paramMap.put("neibubh",neibubh);
+				paramMap.put("qianzhangbj","0");
+				if (file.exists()) {
+//                paramMap.put("file", ZipUtil.zip(file));
+					paramMap.put("file", file);
+					HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
+							header("X-Access-Token", token).form(paramMap).execute();
+					String body = execute.body();
+					JSONObject jsonObject = JSONObject.parseObject(body);
+					Boolean success = (Boolean) jsonObject.get("success");
+					Integer code = (Integer) jsonObject.get("code");
+					if (!success) {
+						if (40002 == code) {
+							log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+						}else if(40003 == code){
+							fail++;
+							log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
+						}else if(40006 == code){
+							fail++;
+							log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
+						}else {
+							fail++;
+							log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+						}
+					} else {
+						count++;
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取成功，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+					}
+				}
 			}catch (Exception e){
 				log.info("申请号："+docListReqDTO.getApplicationnumber(),e);
 				fail++;
-				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
+				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
 				break;
-			}
-			paramMap.put("qianzhangbj","0");
-			//解压压缩包
-			log.info("解压路径："+dbPath);
-			if(StringUtils.isBlank(dbPath)){
-				fail++;
-				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
-				break;
-			}
-			File unzip = ZipUtil.unzip(new File(dbPath));
-			File[] files = unzip.listFiles();
-			File file = null;
-			for (File f : files) {
-				if (f.isFile() && f.getPath().contains(tongzhishubh)) {
-					file = f;
-					break;
-				}
-			}
-			File xmlFile =new File(file.getPath().replace(".zip","")+"\\list.xml");
-			ZipUtil.unzip(file);
-			Document docResult = XmlUtil.readXML(xmlFile);
-			//获取官文中内部编号
-			String neibubh = XmlUtil.getByXPath("//data-bus/TONGZHISXJ/SHUXINGXX/NEIBUBH", docResult, XPathConstants.STRING).toString();
-			paramMap.put("neibubh",neibubh);
-			paramMap.put("qianzhangbj","0");
-			if (file.exists()) {
-//                paramMap.put("file", ZipUtil.zip(file));
-				paramMap.put("file", file);
-				HttpResponse execute = HttpRequest.post(connecturl + "/notice/shunchaoDzsqKhdTzs/upload").
-						header("X-Access-Token", token).form(paramMap).execute();
-				String body = execute.body();
-				JSONObject jsonObject = JSONObject.parseObject(body);
-				Boolean success = (Boolean) jsonObject.get("success");
-				Integer code = (Integer) jsonObject.get("code");
-				if (!success) {
-					if (40002 == code) {
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 对应的通知书系统已经获取，无需重复获取，发明名称为：" + (String) paramMap.get("famingmc") );
-					}else if(40003 == code){
-						fail++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 未匹配到系统中案件，发明名称为：" + (String) paramMap.get("famingmc") );
-					}else if(40006 == code){
-						fail++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") +" 该通知书与压缩包文件内容不一致，发明名称为：" + (String) paramMap.get("famingmc") );
-					}else {
-						fail++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
-					}
-				} else {
-					count++;
-					log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
-				}
 			}
 		}
 		String result = "成功获取官文：" + count +  "，<br>获取失败总数：" + fail;//<br>标签由前端处理换行
