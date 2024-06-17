@@ -49,9 +49,9 @@ public class ShunchaoTmsveController {
 				JSONObject json1= JSONObject.parseObject(enterInfoAndCookie);
 				JSONObject resultObject = (JSONObject) json1.get("result");
 				JSONObject enterpriceAgencyInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
-				TrademarkUtils.tmsveLogin(enterpriceAgencyInfo,cookie);
+				Map<String, String> cookies = TrademarkUtils.tmsveLogin(enterpriceAgencyInfo, cookie);
 
-				paramMap.put("cookie",cookie.toString());
+				paramMap.put("cookie",cookies.toString());
 				HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getTrademarkTmsve").
 						header("X-Access-Token", token).form(paramMap).execute().body();
 			}catch (Exception e){
