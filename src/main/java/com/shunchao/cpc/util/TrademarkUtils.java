@@ -83,14 +83,13 @@ public class TrademarkUtils {
                 Connection.Response response = Jsoup.connect("https://wssq.sbj.cnipa.gov.cn:9443/tmsve/wssqsy_getCayzDl.xhtml").cookies( cookie).data(tmsMap)
                         .method(Connection.Method.POST).ignoreContentType(true).execute();
                 String body = response.body();
-                Map<String,String> JSESSIONID = response.cookies();
-                if(StringUtils.isNotBlank(JSESSIONID.get("JSESSIONID"))){
-                    cookie.put("JSESSIONID",JSESSIONID.get("JSESSIONID"));
-                }
-                System.out.println("商标网登录cookie:"+cookie.toString());
+                Map<String,String> cookies = response.cookies();
+                cookies.put("FECW",cookie.get("FECW"));
+                System.out.println("商标网登录cookies:"+cookies.toString());
+                return  cookies;
             }
         }
-        return  cookie;
+        return  null;
     }
 
 }
