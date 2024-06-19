@@ -32,9 +32,7 @@ public class ShunchaoTmsveController {
 	private String connecturl;
 
 	@GetMapping(value = "/excuteQueryDomestic")
-	public String excuteQueryDomestic(String callback, String enterpriceAgencyId,
-										 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-										 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+	public String excuteQueryDomestic(String callback, String enterpriceAgencyId,String size,String domesticApplyDateBegin,
 										 HttpServletRequest req){
 		String token = req.getParameter("token");
 		if (StringUtils.isNotBlank(enterpriceAgencyId)) {
@@ -49,9 +47,12 @@ public class ShunchaoTmsveController {
 				JSONObject json1= JSONObject.parseObject(enterInfoAndCookie);
 				JSONObject resultObject = (JSONObject) json1.get("result");
 				JSONObject enterpriceAgencyInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
-				Map<String, String> cookies = TrademarkUtils.tmsveLogin(enterpriceAgencyInfo, cookie);
+//				Map<String, String> cookies = TrademarkUtils.tmsveLogin(enterpriceAgencyInfo, cookie);
+				Map<String, String> cookies = TrademarkUtils.tmsveLogin2(enterpriceAgencyInfo);
 
 				paramMap.put("cookie",cookies.toString());
+				paramMap.put("size",size);
+				paramMap.put("tmsveDate",domesticApplyDateBegin);
 				HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getTrademarkTmsve").
 						header("X-Access-Token", token).form(paramMap).execute().body();
 			}catch (Exception e){

@@ -121,9 +121,6 @@ public class ShunchaoTrademarkZrZy {
     /**申请号*/
     private String applicationNumber;
 
-    /**商品*/
-    List<ShunchaoTrademarkProduct> trademarkProducts;
-
     /**着色图样*/
     private String sba0019;
 

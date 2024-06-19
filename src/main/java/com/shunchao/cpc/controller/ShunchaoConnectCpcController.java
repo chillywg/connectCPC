@@ -605,8 +605,8 @@ public class ShunchaoConnectCpcController {
 
 		String fawenrEnd ="";
 		//fawenrEnd = new SimpleDateFormat("yyyy-MM-dd").format(new Date());//结束时间
-		String xiazaizt = "1";//("":全部，1：待下载，2：已下载)
-		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate(fawenrStart,fawenrEnd,xiazaizt,"");//注:开始时间和结束时间必须同时传值
+		String xiazaizt = "2";//("":全部，1：待下载，2：已下载)
+		List<Map<String,Object>> maps = CpcUtils.getPatentCertificate(fawenrStart,fawenrEnd,xiazaizt,"2023228016081");//注:开始时间和结束时间必须同时传值
 		int fail = 0;//失败总数
 		int count = 0;//常规官文总数
 		for(Map<String, Object> paramMap : maps){
@@ -718,6 +718,7 @@ public class ShunchaoConnectCpcController {
 		int fail = 0;//失败总数
 		int count = 0;//常规官文总数
 		for(DocListReqDTO  docListReqDTO: DocListReqDTO){
+			log.info("申请号："+docListReqDTO.getCnApplicationnumber());
 			Map<String, Object> paramMap =new HashMap<>();
 			paramMap.put("shenqingh",docListReqDTO.getCnApplicationnumber());
 			paramMap.put("fawenxlh",StringUtils.isNotBlank(docListReqDTO.getFawenxlh())?docListReqDTO.getFawenxlh():docListReqDTO.getName());
@@ -779,11 +780,11 @@ public class ShunchaoConnectCpcController {
 						}
 					} else {
 						count++;
-						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的证书获取成功，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
+						log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取成功，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
 					}
 				}
 			}catch (Exception e){
-				log.info("申请号："+docListReqDTO.getApplicationnumber(),e);
+				log.info("申请号："+docListReqDTO.getCnApplicationnumber(),e);
 				fail++;
 				log.info("通知书申请号：" + paramMap.get("shenqingh") +"，编号：" + tongzhishubh + " 对应的通知书获取失败，通知书名称：" + paramMap.get("tongzhismc") + "，发明名称为：" + (String) paramMap.get("famingmc"));
 				break;

@@ -2,16 +2,22 @@ package com.shunchao.cpc.util;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.shunchao.cpc.model.Result;
+import com.shunchao.cpc.model.ShunchaoTrademarkCoApplicant;
+import com.shunchao.cpc.model.ShunchaoTrademarkPow;
+import com.shunchao.cpc.model.ShunchaoTrademarkProduct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.openqa.selenium.*;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.Select;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author djlcc
@@ -23,7 +29,8 @@ import java.util.Objects;
 @Component
 @Slf4j
 public class TrademarkUtils {
-
+    private static WebDriver driver;
+    private static String url ="https://wssq.sbj.cnipa.gov.cn:9443/tmsve/";
     /**
      * 功能描述:获取商标网Cookie
      * 场景:
@@ -90,6 +97,48 @@ public class TrademarkUtils {
             }
         }
         return  null;
+    }
+
+    /**
+     * 功能描述:商标网登录
+     * 场景:
+     * @Param: [enterpriceAgencyId]
+     * @Return: void
+     * @Author: Ironz
+     * @Date: 2022/4/13 14:17
+     */
+    public static Map<String,String> tmsveLogin2(JSONObject enterpriseInfo) throws Exception {
+
+        String mark = null;
+        String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
+        String htmlScrolltoJs = "parent.scrollTo(0,600)";
+        Map<String,String> cookieMap = new HashMap<>();
+        try {
+//        String rootPath = System.getProperty("exe.path");
+            String rootPath = "D:\\driver\\foxDriver\\geckodriver-v0.34.0-win64\\";
+            //System.out.println("开始提交程序：=====根目录====="+rootPath);
+            driver = FoxDriverUtils.foxDriver2(driver, rootPath);
+            //driver.navigate().to(url);
+            driver.get(url);
+            //driver.findElement(By.id("pin")).sendKeys(pinword);
+            Thread.sleep(5000);
+            driver.findElement(By.id("pin")).sendKeys(enterpriseInfo.getString("tmsvePin"));
+            driver.findElement(By.id("cipher")).sendKeys(enterpriseInfo.getString("tmsveCipher"));
+            //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
+            driver.findElement(By.cssSelector("#pinWord")).click();
+            Thread.sleep(3000);
+            Set<Cookie> cookies = driver.manage().getCookies();
+            for (Cookie cookie : cookies) {
+                String name = cookie.getName();
+                String value = cookie.getValue();
+                cookieMap.put(name, value);
+            }
+            System.out.println(cookieMap);
+        }catch (Exception e) {
+            log.info("登录失败",e);
+            throw new Exception ("登录失败");
+        }
+        return cookieMap;
     }
 
 }

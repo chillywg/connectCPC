@@ -85,4 +85,8 @@ public class ShunchaoTrademarkApplicant {
     private String languageType;
     /**转让人，受让人标记（1：转让人，2：受让人）*/
     private String transferorFlag;
+    /**变更标记（1：变更前，2：变更后）*/
+    private String changeFlag;
+    /**变更证明文件是否中文（1：是，2：否）*/
+    private String changeFileType;
 }
