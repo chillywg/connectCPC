@@ -135,9 +135,11 @@ public class CpcUtils {
 
     //官文文件导入
     public static String inportTzsFile(String ids,String TONGZHISBH) throws Exception {
+        log.info("ids："+ids);
         String body="[\""+ids+"\"]";
         String dbPath ="";
         BufferedInputStream bufferedInputStream =null;
+        Thread.sleep(500);
         Connection.Response responseTzs = Jsoup.connect("http://localhost:9999/docs/download/file").timeout(100000)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
                 .header("Accept","application/json, text/plain, */*")
@@ -156,7 +158,7 @@ public class CpcUtils {
         if(StringUtils.isEmpty(TONGZHISBH)){
             TONGZHISBH = resultString;
         }
-        log.info(TONGZHISBH);
+        log.info("通知书编号："+TONGZHISBH);
         String base64 = Base64.getEncoder().encodeToString(resultString.getBytes("utf-8"));
         Connection.Response response = Jsoup.connect("http://localhost:9999/docs/export/file/" + base64)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) cnipa-cpc/0.1.3 Chrome/87.0.4280.141 Electron/11.3.0 Safari/537.36")
