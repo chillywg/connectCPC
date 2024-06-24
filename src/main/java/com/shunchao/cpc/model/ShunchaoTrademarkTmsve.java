@@ -15,6 +15,12 @@ public class ShunchaoTrademarkTmsve {
     /**代理文号*/
     private String agentNumber;
 
+    private String tmsveAgencynumber;
+
+    private java.util.Date tmsveApplyday;
+
+    private String tmsveApplynumber;
+
     /**是否地理标志 0否1是*/
     private String whetherGeographicalIndication;
 

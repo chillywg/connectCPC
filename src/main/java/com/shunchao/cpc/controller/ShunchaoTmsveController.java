@@ -32,7 +32,37 @@ public class ShunchaoTmsveController {
 	private String connecturl;
 
 	@GetMapping(value = "/excuteQueryDomestic")
-	public String excuteQueryDomestic(String callback, String enterpriceAgencyId,String size,String domesticApplyDateBegin,
+	public String excuteQueryDomestic(String callback, String enterpriceAgencyId,
+									  HttpServletRequest req){
+		String token = req.getParameter("token");
+		int size = 0 ;
+		if (StringUtils.isNotBlank(enterpriceAgencyId)) {
+			try{
+				HashMap<String, Object> paramMap = new HashMap<>();
+				paramMap.put("agencyId", enterpriceAgencyId);
+				//获取代理机构信息
+				String enterInfoAndTmsveDate = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getEnterInfoAndTmsveDate").
+						header("X-Access-Token", token).form(paramMap).execute().body();
+				HttpRequest.closeCookie();
+				JSONObject json1= JSONObject.parseObject(enterInfoAndTmsveDate);
+				JSONObject resultObject = (JSONObject) json1.get("result");
+				size = TrademarkUtils.tmsveLogin(resultObject, connecturl, token);
+			}catch (Exception e){
+				log.info("获取失败",e);
+				return JSONObject.toJSONString(Result.error("获取失败"));
+			}
+		}
+		log.info("获取结束");
+		if (StringUtils.isNotBlank(callback)) {
+			String string = JSONObject.toJSONString(Result.ok(size));
+			return callback + "(" + string + ")";
+		} else {
+			return JSONObject.toJSONString(Result.error("获取失败"));
+		}
+	}
+
+	@GetMapping(value = "/excuteQueryDomestic2")
+	public String excuteQueryDomestic2(String callback, String enterpriceAgencyId,String size,String domesticApplyDateBegin,
 										 HttpServletRequest req){
 		String token = req.getParameter("token");
 		if (StringUtils.isNotBlank(enterpriceAgencyId)) {
@@ -47,8 +77,8 @@ public class ShunchaoTmsveController {
 				JSONObject json1= JSONObject.parseObject(enterInfoAndCookie);
 				JSONObject resultObject = (JSONObject) json1.get("result");
 				JSONObject enterpriceAgencyInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
-//				Map<String, String> cookies = TrademarkUtils.tmsveLogin(enterpriceAgencyInfo, cookie);
-				Map<String, String> cookies = TrademarkUtils.tmsveLogin2(enterpriceAgencyInfo);
+				Map<String, String> cookies = TrademarkUtils.tmsveLogin2(enterpriceAgencyInfo, cookie);
+//				Map<String, String> cookies = TrademarkUtils.tmsveLogin2(enterpriceAgencyInfo);
 
 				paramMap.put("cookie",cookies.toString());
 				paramMap.put("size",size);

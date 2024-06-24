@@ -55,8 +55,8 @@ public class ShunchaoTrademarkSendController {
         String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
         String htmlScrolltoJs = "parent.scrollTo(0,600)";
         try {
-//            String rootPath = System.getProperty("exe.path");
-                    String rootPath ="D:\\DUOUEXE\\duou\\";
+            String rootPath = System.getProperty("exe.path");
+//                    String rootPath ="D:\\DUOUEXE\\duou\\";
 //            String rootPath = "D:\\driver\\foxDriver\\geckodriver-v0.34.0-win64\\";
             //System.out.println("开始提交程序：=====根目录====="+rootPath);
             driver = ChromeDriverUtils.beforeM(driver,rootPath);
@@ -64,15 +64,12 @@ public class ShunchaoTrademarkSendController {
             //driver.navigate().to(url);
             driver.get(url);
             //driver.findElement(By.id("pin")).sendKeys(pinword);
-            Thread.sleep(1000);
+            Thread.sleep(3000);
             driver.findElement(By.id("pin")).sendKeys(trademarkApplicantProduct.getTmsvePin());
             driver.findElement(By.id("cipher")).sendKeys(trademarkApplicantProduct.getTmsveCipher());
             //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
             driver.findElement(By.cssSelector("#pinWord")).click();
             Thread.sleep(5000);
-
-            Set<Cookie> cookies = driver.manage().getCookies();
-            System.out.println(cookies);
 
             //移动弹框内滚动条
             ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+1000);
@@ -1025,10 +1022,10 @@ public class ShunchaoTrademarkSendController {
 
         //加载申请人基本信息
         ShunchaoTrademarkApplicant shunchaoTrademarkApplicant =shunchaoTrademarkTmsveService.getDfSendTsvmeData(workbenchId,token);
-                    String rootPath = System.getProperty("exe.path");
+        String rootPath = System.getProperty("exe.path");
 //        String rootPath ="D:\\DUOUEXE\\duou\\";
         //System.out.println("开始提交程序：=====根目录====="+rootPath);
-        driver = FoxDriverUtils.foxDriver(driver,rootPath);
+        driver = ChromeDriverUtils.beforeM(driver,rootPath);
         //driver.navigate().to(url);
         driver.get(url);
 
@@ -1329,7 +1326,7 @@ public class ShunchaoTrademarkSendController {
         String rootPath = System.getProperty("exe.path");
 //        String rootPath ="D:\\DUOUEXE\\duou\\";
         //System.out.println("开始提交程序：=====根目录====="+rootPath);
-        driver = FoxDriverUtils.foxDriver(driver, rootPath);
+        driver = ChromeDriverUtils.beforeM(driver, rootPath);
         //driver.navigate().to(url);
         driver.get(url);
 
@@ -1907,8 +1904,8 @@ public class ShunchaoTrademarkSendController {
 
         //加载申请人基本信息
         ShunchaoTrademarkTmsve shunchaoTrademarkTmsve = shunchaoTrademarkTmsveService.getSendTsvmeData(trademarkId, token);
-//        String rootPath = System.getProperty("exe.path");
-        String rootPath ="D:\\DUOUEXE\\duou\\";
+        String rootPath = System.getProperty("exe.path");
+//        String rootPath ="D:\\DUOUEXE\\duou\\";
 //        String rootPath = "D:\\driver\\foxDriver\\geckodriver-v0.34.0-win64\\";
         //System.out.println("开始提交程序：=====根目录====="+rootPath);
         driver = ChromeDriverUtils.beforeM(driver, rootPath);
@@ -2386,7 +2383,6 @@ public class ShunchaoTrademarkSendController {
         driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
         } catch (Exception e){
             log.info("获取失败",e);
-            driver.close();
             return Result.error("获取失败");
         }
         return Result.ok();

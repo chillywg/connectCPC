@@ -1,22 +1,22 @@
 package com.shunchao.cpc.util;
 
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.http.HttpRequest;
+import com.alibaba.druid.util.StringUtils;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.shunchao.cpc.model.Result;
-import com.shunchao.cpc.model.ShunchaoTrademarkCoApplicant;
-import com.shunchao.cpc.model.ShunchaoTrademarkPow;
-import com.shunchao.cpc.model.ShunchaoTrademarkProduct;
+import com.shunchao.cpc.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.openqa.selenium.*;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.support.ui.Select;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -54,7 +54,7 @@ public class TrademarkUtils {
      * @Author: Ironz
      * @Date: 2022/4/13 14:17
      */
-    public static Map<String,String> tmsveLogin(JSONObject enterpriseInfo, Map<String,String> cookie) throws IOException {
+    public static Map<String,String> tmsveLogin2(JSONObject enterpriseInfo, Map<String,String> cookie) throws IOException {
         if (Objects.nonNull(enterpriseInfo)) {
             if (Objects.nonNull(enterpriseInfo.getString("tmsvePin")) && Objects.nonNull(enterpriseInfo.getString("tmsveSignCert")) && Objects.nonNull(enterpriseInfo.getString("tmsveSignData"))) {
 
@@ -107,17 +107,26 @@ public class TrademarkUtils {
      * @Author: Ironz
      * @Date: 2022/4/13 14:17
      */
-    public static Map<String,String> tmsveLogin2(JSONObject enterpriseInfo) throws Exception {
-
+    public static int tmsveLogin(JSONObject resultObject,String connecturl,String token) throws Exception {
+        JSONObject enterpriseInfo = (JSONObject)resultObject.get("enterpriceAgencyInfo");
+        String minSendTime ="";
+        if(ObjectUtil.isNotNull(resultObject.get("minSendTime"))){
+            minSendTime =resultObject.get("minSendTime").toString();
+        }
+        String tmsveDate ="";
+        if(ObjectUtil.isNotNull(resultObject.get("tmsveDate"))){
+            tmsveDate=resultObject.get("tmsveDate").toString();
+        }
         String mark = null;
         String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
         String htmlScrolltoJs = "parent.scrollTo(0,600)";
         Map<String,String> cookieMap = new HashMap<>();
         try {
-//        String rootPath = System.getProperty("exe.path");
-            String rootPath = "D:\\driver\\foxDriver\\geckodriver-v0.34.0-win64\\";
+        String rootPath = System.getProperty("exe.path");
+//            String rootPath ="D:\\DUOUEXE\\duou\\";
+//            String rootPath = "D:\\driver\\foxDriver\\geckodriver-v0.34.0-win64\\";
             //System.out.println("开始提交程序：=====根目录====="+rootPath);
-            driver = FoxDriverUtils.foxDriver2(driver, rootPath);
+            driver = ChromeDriverUtils.beforeM(driver, rootPath);
             //driver.navigate().to(url);
             driver.get(url);
             //driver.findElement(By.id("pin")).sendKeys(pinword);
@@ -127,18 +136,115 @@ public class TrademarkUtils {
             //driver.findElement(By.xpath("//*[@id=\"pinWord\"]")).click();
             driver.findElement(By.cssSelector("#pinWord")).click();
             Thread.sleep(3000);
-            Set<Cookie> cookies = driver.manage().getCookies();
-            for (Cookie cookie : cookies) {
-                String name = cookie.getName();
-                String value = cookie.getValue();
-                cookieMap.put(name, value);
-            }
-            System.out.println(cookieMap);
-        }catch (Exception e) {
-            log.info("登录失败",e);
-            throw new Exception ("登录失败");
-        }
-        return cookieMap;
-    }
 
+            //移动弹框内滚动条
+            ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+1000);
+
+            //driver.findElement(By.xpath("/html/body/div[2]/div[2]/div[1]/div/input")).click();//开发本地电脑可以
+            //driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).click();//ie8可用
+            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-next\"]")).sendKeys(Keys.ENTER);
+            //driver.findElement(By.cssSelector(".pop-next")).click();//开发本地电脑可以
+            Thread.sleep(3000);
+
+            ((JavascriptExecutor) driver).executeScript(alertScrollTopJs+3000);
+            Thread.sleep(3000);
+
+            driver.findElement(By.xpath("//INPUT[@class=\"pop-ok pop-close\"]")).click();//ie8可用
+
+            if(!StringUtils.isEmpty(minSendTime)){
+                //菜单
+                driver.findElement(By.xpath("//*[@id=\"menu\"]/ul/li[9]/a")).click();
+
+                driver.findElement(By.xpath("//*[@id=\"menu\"]/ul/li[9]/ul/li[1]/a")).click();
+
+                //进入iframe
+                driver.switchTo().frame("myframe");
+
+                driver.findElement(By.id("date1")).sendKeys(minSendTime);
+                driver.findElement(By.id("but1")).click();
+//            WebElement elementTable = driver.findElement(By.tagName("import_tab"));
+                WebElement elementTable = driver.findElement(By.xpath("//*[@id=\"form1\"]/table[3]"));
+                System.out.println(elementTable.getTagName());
+                List<ShunchaoTrademarkTmsve> trademarkTmsveList = new ArrayList<>();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy年M月d日");
+                SimpleDateFormat simpleFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                if (Objects.nonNull(elementTable)) {
+                    List<WebElement> elements = elementTable.findElements(By.tagName("tr"));
+                    for (int i = 1; i < elements.size(); i++) {
+                        WebElement tr = elements.get(i);
+                        List<WebElement> tds = tr.findElements(By.tagName("td"));
+                        ShunchaoTrademarkTmsve trademarkTmsve = new ShunchaoTrademarkTmsve();
+                        if(StringUtils.isEmpty(tds.get(3).getText())){
+                            continue;
+                        }
+                        trademarkTmsve.setTmsveAgencynumber(tds.get(3).getText());
+
+                        String replace = tds.get(4).getText();
+                        LocalDate localDate = LocalDate.parse(replace, formatter);
+                        Date applyDay = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+                        trademarkTmsve.setTmsveApplyday(applyDay);
+                        trademarkTmsve.setTmsveApplynumber(tds.get(5).getText());
+                        trademarkTmsveList.add(trademarkTmsve);
+                    }
+                }
+                if (trademarkTmsveList.size()>0){
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("trademarkString", JSON.toJSONString(trademarkTmsveList));
+                    //维护商标申请号和申请日期
+                    String body = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/updateTrademarkinfo").
+                            header("X-Access-Token", token).form(map).execute().body();
+                    JSONObject jsonObject = JSONObject.parseObject(body);
+                    Boolean success = (Boolean) jsonObject.get("success");
+                    if (!success) {
+                        throw new Exception ("维护商标申请号和申请日期失败");
+                    }
+                }
+                driver.switchTo().parentFrame();
+            }
+            //菜单
+            driver.findElement(By.xpath("//*[@id=\"menu\"]/ul/li[8]/a")).click();
+
+            driver.findElement(By.xpath("//*[@id=\"menu\"]/ul/li[8]/ul/li[1]/a")).click();
+
+            //进入iframe
+            driver.switchTo().frame("myframe");
+            driver.findElement(By.id("date1")).sendKeys(tmsveDate);
+            driver.findElement(By.id("but1")).click();
+            WebElement webElement= driver.findElement(By.xpath("//*[@id=\"form1\"]/table[2]"));
+            List<WebElement> elements1 = webElement.findElements(By.tagName("font"));
+            int size = Integer.valueOf(elements1.get(1).getText());
+            System.out.println(size);
+            if (size>0){
+                Set<Cookie> cookies = driver.manage().getCookies();
+                for (Cookie cookie : cookies) {
+                    String name = cookie.getName();
+                    String value = cookie.getValue();
+                    cookieMap.put(name, value);
+                }
+
+                System.out.println(cookieMap);
+                HashMap<String, Object> paramMap= new HashMap<>();
+                paramMap.put("id",enterpriseInfo.get("id"));
+                //拉取官文
+                paramMap.put("cookie",cookieMap.toString());
+				paramMap.put("size",size);
+				paramMap.put("tmsveDate",tmsveDate);
+                String body = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkTmsve/getTrademarkTmsve").
+                        header("X-Access-Token", token).form(paramMap).execute().body();
+                JSONObject jsonObject = JSONObject.parseObject(body);
+                Boolean success = (Boolean) jsonObject.get("success");
+                if (!success) {
+                    throw new Exception ("获取失败");
+                }
+            }
+            driver.close();
+            driver.quit();
+            return size;
+        }catch (Exception e) {
+            log.info("获取失败",e);
+            driver.close();
+            driver.quit();
+            throw new Exception ("获取失败");
+        }
+    }
 }
