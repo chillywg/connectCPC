@@ -75,6 +75,10 @@ public class ShunchaoTrademarkApplicant {
     private String sba0032;
     /**自然人死亡/企业或其他组织注销证明*/
     private String sba0033;
+    /**变更证明文件(中文)*/
+    private String sba0036;
+    /**变更证明文件(英文)*/
+    private String sba0037;
     /**商标代理机构PIN码*/
     private String tmsvePin;
     /*商标代理机构密码*/
