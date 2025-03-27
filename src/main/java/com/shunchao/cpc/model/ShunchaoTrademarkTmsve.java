@@ -1,5 +1,6 @@
 package com.shunchao.cpc.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -158,13 +159,6 @@ public class ShunchaoTrademarkTmsve {
     /**受让人委托书*/
     private String sba0035;
 
-    /**变更证明文件(中文)*/
-    private String sba0036;
-
-    /**变更证明文件(英文)*/
-    private String sba0037;
-
-
     //==================新增=============
     /**国内申请人联系地址*/
     private String applicantContactAddress;
@@ -195,5 +189,8 @@ public class ShunchaoTrademarkTmsve {
 
     /**办理业务(1：商标转让，2：商标转移)*/
     private String transferType;
+
+    /**变更类型（1：变更名义，2：变更地址，3：变更名义和地址）*/
+    private Integer changeType;
 
 }
