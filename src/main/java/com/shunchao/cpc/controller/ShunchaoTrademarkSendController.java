@@ -1560,28 +1560,21 @@ public class ShunchaoTrademarkSendController {
 
         //转让人上传文件
         //自然人死亡/企业或其他组织注销证明
-        if(Objects.nonNull(applicant1.getSba0027())){
+        if(Objects.nonNull(applicant1.getSba0033())){
             driver.findElement(By.xpath("//*[@id=\"gqcxTr\"]/td[2]/input[2]")).click();
             WebElement iframe = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
             driver.switchTo().frame(iframe);//进入上传文件iframe
             driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0033());
             driver.findElement(By.id("laodBut")).click();
-
+            String divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                Thread.sleep(1000);
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            }
             driver.switchTo().parentFrame();//回到上一个iframe
             driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
-
+            Thread.sleep(500);
         }
-
-        //同意转让声明或商标移转证明
-        driver.findElement(By.xpath("//*[@id=\"wsOrzyzm\"]/td[2]/input[2]")).click();
-        WebElement iframe4 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
-        driver.switchTo().frame(iframe4);//进入上传文件iframe
-        driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0032());
-        driver.findElement(By.id("laodBut")).click();
-
-        driver.switchTo().parentFrame();//回到上一个iframe
-        driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
-
         if (applicant1.getApplicantType().equals("0")){//法人或其他组织
             //转让人主体资格证明文件(中文)
             driver.findElement(By.xpath("//*[@id=\"zrZtCnTr\"]/td[2]/input[2]")).click();
@@ -1589,20 +1582,29 @@ public class ShunchaoTrademarkSendController {
             driver.switchTo().frame(iframe1);//进入上传文件iframe
             driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
             driver.findElement(By.id("laodBut")).click();
-
+            String divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                Thread.sleep(1000);
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            }
             driver.switchTo().parentFrame();//回到上一个iframe
             driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
-
+            Thread.sleep(500);
             if(applicant1.getLanguageType().equals("2")){
                 //转让人主体资格证明文件(外文)
                 driver.findElement(By.xpath("//*[@id=\"zrZtEnTr\"]/td[2]/input[2]")).click();
                 WebElement iframe2 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
                 driver.switchTo().frame(iframe2);//进入上传文件iframe
-                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
+                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0028());
                 driver.findElement(By.id("laodBut")).click();
-
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                    Thread.sleep(1000);
+                    divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                }
                 driver.switchTo().parentFrame();//回到上一个iframe
                 driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                Thread.sleep(500);
             }
         }else{//自然人,无营业执照自然人
             //转让人证件名称
@@ -1619,33 +1621,52 @@ public class ShunchaoTrademarkSendController {
 
             //转让人身份证明文件(中文)
             driver.findElement(By.xpath("//*[@id=\"zrSfCnTr\"]/td[2]/input[2]")).click();
-            WebElement iframe1 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
+            WebElement iframe1 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
             driver.switchTo().frame(iframe1);//进入上传文件iframe
-            driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
+            driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0025());
             driver.findElement(By.id("laodBut")).click();
-
+            String divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                Thread.sleep(1000);
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            }
             driver.switchTo().parentFrame();//回到上一个iframe
             driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+            Thread.sleep(500);
             if(applicant1.getLanguageType().equals("1")){
-                //转让人主体资格证明文件(中文)
-                driver.findElement(By.xpath("//*[@id=\"zrZtCnTr\"]/td[2]/input[2]")).click();
-                WebElement iframe3 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
-                driver.switchTo().frame(iframe3);//进入上传文件iframe
-                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
-                driver.findElement(By.id("laodBut")).click();
-
-                driver.switchTo().parentFrame();//回到上一个iframe
-                driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                if(Objects.nonNull(applicant1.getSba0027())){
+                    //转让人主体资格证明文件(中文)
+                    driver.findElement(By.xpath("//*[@id=\"zrZtCnTr\"]/td[2]/input[2]")).click();
+                    WebElement iframe3 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
+                    driver.switchTo().frame(iframe3);//进入上传文件iframe
+                    driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
+                    driver.findElement(By.id("laodBut")).click();
+                    divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                    while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                        Thread.sleep(1000);
+                        divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                    }
+                    driver.switchTo().parentFrame();//回到上一个iframe
+                    driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                    Thread.sleep(500);
+                }
             }else{
-                //转让人身份证明文件(外文)
-                driver.findElement(By.xpath("//*[@id=\"zrSfEnTr\"]/td[2]/input[2]")).click();
-                WebElement iframe3 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
-                driver.switchTo().frame(iframe3);//进入上传文件iframe
-                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
-                driver.findElement(By.id("laodBut")).click();
-
-                driver.switchTo().parentFrame();//回到上一个iframe
-                driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                if(Objects.nonNull(applicant1.getSba0026())) {
+                    //转让人身份证明文件(外文)
+                    driver.findElement(By.xpath("//*[@id=\"zrSfEnTr\"]/td[2]/input[2]")).click();
+                    WebElement iframe3 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
+                    driver.switchTo().frame(iframe3);//进入上传文件iframe
+                    driver.findElement(By.id("filePdf")).sendKeys(rootPath + applicant1.getSba0026());
+                    driver.findElement(By.id("laodBut")).click();
+                    divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                    while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                        Thread.sleep(1000);
+                        divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                    }
+                    driver.switchTo().parentFrame();//回到上一个iframe
+                    driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                    Thread.sleep(500);
+                }
             }
         }
 
@@ -1657,20 +1678,29 @@ public class ShunchaoTrademarkSendController {
             driver.switchTo().frame(iframe1);//进入上传文件iframe
             driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant2.getSba0027());
             driver.findElement(By.id("laodBut")).click();
-
+            String divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                Thread.sleep(1000);
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            }
             driver.switchTo().parentFrame();//回到上一个iframe
             driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
-
+            Thread.sleep(500);
             if(applicant2.getLanguageType().equals("2")){
                 //转让人主体资格证明文件(外文)
                 driver.findElement(By.xpath("//*[@id=\"srZtEnTr\"]/td[2]/input[2]")).click();
                 WebElement iframe2 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
                 driver.switchTo().frame(iframe2);//进入上传文件iframe
-                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant2.getSba0027());
+                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant2.getSba0028());
                 driver.findElement(By.id("laodBut")).click();
-
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                    Thread.sleep(1000);
+                    divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                }
                 driver.switchTo().parentFrame();//回到上一个iframe
                 driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                Thread.sleep(500);
             }
         }else{//自然人,无营业执照自然人
             //受让人证件名称
@@ -1691,9 +1721,14 @@ public class ShunchaoTrademarkSendController {
             driver.switchTo().frame(iframe1);//进入上传文件iframe
             driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant2.getSba0025());
             driver.findElement(By.id("laodBut")).click();
-
+            String divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                Thread.sleep(1000);
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+            }
             driver.switchTo().parentFrame();//回到上一个iframe
             driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+            Thread.sleep(500);
             if(applicant2.getLanguageType().equals("1")){
                 //受让人主体资格证明文件(中文)
                 driver.findElement(By.xpath("//*[@id=\"srZtCnTr\"]/td[2]/input[2]")).click();
@@ -1701,9 +1736,14 @@ public class ShunchaoTrademarkSendController {
                 driver.switchTo().frame(iframe3);//进入上传文件iframe
                 driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant2.getSba0027());
                 driver.findElement(By.id("laodBut")).click();
-
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                    Thread.sleep(1000);
+                    divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                }
                 driver.switchTo().parentFrame();//回到上一个iframe
                 driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                Thread.sleep(500);
             }else{
                 //受让人身份证明文件(外文)
                 driver.findElement(By.xpath("//*[@id=\"srSfEnTr\"]/td[2]/input[2]")).click();
@@ -1711,11 +1751,31 @@ public class ShunchaoTrademarkSendController {
                 driver.switchTo().frame(iframe3);//进入上传文件iframe
                 driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant2.getSba0026());
                 driver.findElement(By.id("laodBut")).click();
-
+                divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+                    Thread.sleep(1000);
+                    divsuccess = driver.findElement(By.id("divsuccess")).getText();
+                }
                 driver.switchTo().parentFrame();//回到上一个iframe
                 driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+                Thread.sleep(500);
             }
         }
+
+        //同意转让声明或商标移转证明
+        driver.findElement(By.xpath("//*[@id=\"wsOrzyzm\"]/td[2]/input[2]")).click();
+        WebElement iframe4 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
+        driver.switchTo().frame(iframe4);//进入上传文件iframe
+        driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0032());
+        driver.findElement(By.id("laodBut")).click();
+        String divsuccess = driver.findElement(By.id("divsuccess")).getText();
+        while(!"文件上传成功,请点击'x'按钮关闭后继续下一步操作".equals(divsuccess)){
+            Thread.sleep(1000);
+            divsuccess = driver.findElement(By.id("divsuccess")).getText();
+        }
+        driver.switchTo().parentFrame();//回到上一个iframe
+        driver.findElement(By.xpath("/html/body/div[8]/div[1]/div[2]/a")).click();
+        Thread.sleep(500);
 
         //商标类型
         driver.findElement(By.id("radio_p")).click();//radio_p:普通商标,radio_j:集体商标 radio_z:证明商标
@@ -1801,7 +1861,7 @@ public class ShunchaoTrademarkSendController {
                                 driver.findElement(By.xpath("//*[@id=\"fileZtEnTr\"]/td[2]/input[2]")).click();
                                 WebElement iframe2 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                                 driver.switchTo().frame(iframe2);//进入上传文件iframe
-                                driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0027());
+                                driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0028());
                                 driver.findElement(By.id("laodBut")).click();
 
                                 driver.switchTo().parentFrame();//回到上一个iframe
@@ -1813,7 +1873,7 @@ public class ShunchaoTrademarkSendController {
                             driver.findElement(By.xpath("//*[@id=\"fileSfTr\"]/td[2]/input[2]")).click();
                             WebElement iframe1 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                             driver.switchTo().frame(iframe1);//进入上传文件iframe
-                            driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0027());
+                            driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0025());
                             driver.findElement(By.id("laodBut")).click();
 
                             driver.switchTo().parentFrame();//回到上一个iframe
@@ -1833,7 +1893,7 @@ public class ShunchaoTrademarkSendController {
                                 driver.findElement(By.xpath("//*[@id=\"fileSfEnTr\"]/td[2]/input[2]")).click();
                                 WebElement iframe5 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                                 driver.switchTo().frame(iframe5);//进入上传文件iframe
-                                driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0027());
+                                driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant.getSba0026());
                                 driver.findElement(By.id("laodBut")).click();
 
                                 driver.switchTo().parentFrame();//回到上一个iframe
@@ -2085,7 +2145,7 @@ public class ShunchaoTrademarkSendController {
                 driver.findElement(By.xpath("//*[@id=\"fileZtEnTr\"]/td[2]/input[2]")).click();
                 WebElement iframe2 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
                 driver.switchTo().frame(iframe2);//进入上传文件iframe
-                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
+                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0028());
                 driver.findElement(By.id("laodBut")).click();
 
                 driver.switchTo().parentFrame();//回到上一个iframe
@@ -2108,7 +2168,7 @@ public class ShunchaoTrademarkSendController {
             driver.findElement(By.xpath("//*[@id=\"fileSfTr\"]/td[2]/input[2]")).click();
             WebElement iframe1 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));//
             driver.switchTo().frame(iframe1);//进入上传文件iframe
-            driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
+            driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0025());
             driver.findElement(By.id("laodBut")).click();
 
             driver.switchTo().parentFrame();//回到上一个iframe
@@ -2130,7 +2190,7 @@ public class ShunchaoTrademarkSendController {
                 driver.findElement(By.xpath("//*[@id=\"fileSfEnTr\"]/td[2]/input[2]")).click();
                 WebElement iframe3 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                 driver.switchTo().frame(iframe3);//进入上传文件iframe
-                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0027());
+                driver.findElement(By.id("filePdf")).sendKeys(rootPath+applicant1.getSba0026());
                 driver.findElement(By.id("laodBut")).click();
 
                 driver.switchTo().parentFrame();//回到上一个iframe
@@ -2206,7 +2266,7 @@ public class ShunchaoTrademarkSendController {
                         driver.findElement(By.xpath("//*[@id=\"befileZtEnTr\"]/td[2]/input[2]")).click();
                         WebElement iframe2 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                         driver.switchTo().frame(iframe2);//进入上传文件iframe
-                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant1.getSba0027());
+                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant1.getSba0028());
                         driver.findElement(By.id("laodBut")).click();
 
                         driver.switchTo().parentFrame();//回到上一个iframe
@@ -2218,7 +2278,7 @@ public class ShunchaoTrademarkSendController {
                     driver.findElement(By.xpath("//*[@id=\"befileSfTr\"]/td[2]/input[2]")).click();
                     WebElement iframe1 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                     driver.switchTo().frame(iframe1);//进入上传文件iframe
-                    driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant1.getSba0027());
+                    driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant1.getSba0025());
                     driver.findElement(By.id("laodBut")).click();
 
                     driver.switchTo().parentFrame();//回到上一个iframe
@@ -2238,7 +2298,7 @@ public class ShunchaoTrademarkSendController {
                         driver.findElement(By.xpath("//*[@id=\"befileSfEnTr\"]/td[2]/input[2]")).click();
                         WebElement iframe5 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                         driver.switchTo().frame(iframe5);//进入上传文件iframe
-                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant1.getSba0027());
+                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant1.getSba0026());
                         driver.findElement(By.id("laodBut")).click();
 
                         driver.switchTo().parentFrame();//回到上一个iframe
@@ -2291,7 +2351,7 @@ public class ShunchaoTrademarkSendController {
                         driver.findElement(By.xpath("//*[@id=\"affileZtEnTr\"]/td[2]/input[2]")).click();
                         WebElement iframe2 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                         driver.switchTo().frame(iframe2);//进入上传文件iframe
-                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant2.getSba0027());
+                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant2.getSba0028());
                         driver.findElement(By.id("laodBut")).click();
 
                         driver.switchTo().parentFrame();//回到上一个iframe
@@ -2303,7 +2363,7 @@ public class ShunchaoTrademarkSendController {
                     driver.findElement(By.xpath("//*[@id=\"affileSfTr\"]/td[2]/input[2]")).click();
                     WebElement iframe1 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                     driver.switchTo().frame(iframe1);//进入上传文件iframe
-                    driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant2.getSba0027());
+                    driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant2.getSba0025());
                     driver.findElement(By.id("laodBut")).click();
 
                     driver.switchTo().parentFrame();//回到上一个iframe
@@ -2323,7 +2383,7 @@ public class ShunchaoTrademarkSendController {
                         driver.findElement(By.xpath("//*[@id=\"affileSfEnTr\"]/td[2]/input[2]")).click();
                         WebElement iframe5 = driver.findElement(By.xpath("//*[@id=\"dlg_upload\"]/iframe"));
                         driver.switchTo().frame(iframe5);//进入上传文件iframe
-                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant2.getSba0027());
+                        driver.findElement(By.id("filePdf")).sendKeys(rootPath+shunchaoTrademarkApplicant2.getSba0026());
                         driver.findElement(By.id("laodBut")).click();
 
                         driver.switchTo().parentFrame();//回到上一个iframe
