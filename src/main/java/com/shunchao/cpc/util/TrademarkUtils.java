@@ -117,6 +117,8 @@ public class TrademarkUtils {
         if(ObjectUtil.isNotNull(resultObject.get("tmsveDate"))){
             tmsveDate=resultObject.get("tmsveDate").toString();
         }
+        log.info("---------------minSendTime-----------------:"+minSendTime);
+        log.info("---------------tmsveDate-----------------:"+tmsveDate);
         String mark = null;
         String alertScrollTopJs = "document.querySelector('.pop-content').scrollTop=";
         String htmlScrolltoJs = "parent.scrollTo(0,600)";
@@ -159,9 +161,10 @@ public class TrademarkUtils {
 
                 //进入iframe
                 driver.switchTo().frame("myframe");
-
-                driver.findElement(By.id("date1")).sendKeys(minSendTime);
+                Thread.sleep(2000);
+                driver.findElement(By.xpath("//*[@id=\"date1\"]")).sendKeys(minSendTime);
                 driver.findElement(By.id("but1")).click();
+                Thread.sleep(6000);
 //            WebElement elementTable = driver.findElement(By.tagName("import_tab"));
                 WebElement elementTable = driver.findElement(By.xpath("//*[@id=\"form1\"]/table[3]"));
                 System.out.println(elementTable.getTagName());
@@ -208,8 +211,10 @@ public class TrademarkUtils {
 
             //进入iframe
             driver.switchTo().frame("myframe");
-            driver.findElement(By.id("date1")).sendKeys(tmsveDate);
+            Thread.sleep(2000);
+            driver.findElement(By.xpath("//*[@id=\"date1\"]")).sendKeys(tmsveDate);
             driver.findElement(By.id("but1")).click();
+            Thread.sleep(6000);
             WebElement webElement= driver.findElement(By.xpath("//*[@id=\"form1\"]/table[2]"));
             List<WebElement> elements1 = webElement.findElements(By.tagName("font"));
             int size = Integer.valueOf(elements1.get(1).getText());
