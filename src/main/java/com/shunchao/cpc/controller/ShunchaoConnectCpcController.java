@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.xpath.XPathConstants;
 import java.io.*;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -76,6 +78,37 @@ public class ShunchaoConnectCpcController {
 			return Result.error(mark);
 		}
 	}
+
+
+	@GetMapping(value = "/chackMac")
+	public Result<?> chackMac(String macAddress) {
+		try {
+			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+			String macLocal = "";
+			while (networkInterfaces.hasMoreElements()) {
+				NetworkInterface networkInterface = networkInterfaces.nextElement();
+				byte[] mac = networkInterface.getHardwareAddress();
+				if (mac != null) {
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < mac.length; i++) {
+						sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+					}
+					System.out.println("MAC Address: " + sb.toString());
+					macLocal = sb.toString();
+					break;
+				}
+			}
+			if(macAddress.equals(macLocal)){
+				return Result.ok();
+			}else{
+				return Result.error(macLocal);
+			}
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+		return Result.ok();
+	}
+
 
 
 	/**
