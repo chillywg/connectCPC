@@ -20,6 +20,8 @@ public interface IShunchaoTrademarkTmsveService{
 
     void connectTmsveDownloadData(String trademarkId, String token);
 
+    ShunchaoTrademarkTmsve downloadSendTsvmeData(String trademarkId, String token);
+
     ShunchaoTrademarkTmsve getSendTsvmeData(String trademarkId, String token);
 
 }

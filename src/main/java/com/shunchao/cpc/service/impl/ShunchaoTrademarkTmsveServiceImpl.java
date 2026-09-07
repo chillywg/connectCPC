@@ -71,6 +71,21 @@ public class ShunchaoTrademarkTmsveServiceImpl implements IShunchaoTrademarkTmsv
     }
 
     @Override
+    public ShunchaoTrademarkTmsve downloadSendTsvmeData(String trademarkId, String token) {
+
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("trademarkId", trademarkId);
+        //获取代理机构信息
+        String dfSendTsvmeData = HttpRequest.get(connecturl + "/trademark/shunchaoTrademarkSendcase/downloadSendTsvmeData").
+                header("X-Access-Token", token).form(paramMap).execute().body();
+        JSONObject tmsveJson= JSONObject.parseObject(dfSendTsvmeData);
+        JSONObject resultJson =(JSONObject) tmsveJson.get("result");
+        ShunchaoTrademarkTmsve shunchaoTrademarkTmsve= JSONObject.toJavaObject(resultJson, ShunchaoTrademarkTmsve.class);
+        return shunchaoTrademarkTmsve;
+    }
+
+
+    @Override
     public ShunchaoTrademarkTmsve getSendTsvmeData(String trademarkId, String token) {
 
         HashMap<String, Object> paramMap = new HashMap<>();

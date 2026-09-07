@@ -1,5 +1,6 @@
 package com.shunchao.cpc.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
@@ -24,17 +25,40 @@ public class ShunchaoTrademarkApplicant {
     /**证件名称 0身份证1护照2其他*/
     private String idName;
 
+    /**身份证明文件名称文本*/
+    private java.lang.String idetCertName;
+
     /**证件号码*/
     private String idNumber;
+
+    /**主体资格证明文件类型（1：个体工商户营业执照，2：农村土地承包经营合同复印件，99：其他）*/
+    private java.lang.String objCertType;
+    /**申请人地址（省)*/
+    private java.lang.String applicationAddressProvince;
+    /**申请人地址（市)*/
+    private java.lang.String applicationAddressCity;
+    /**申请人地址（区)*/
+    private String applicationAddressArea;
 
     /**申请人地址 国家省市县区*/
     private String applicationAddres;
 
+    /**国内申请人联系地址（中国大陆）*/
+    private java.lang.String dmstcApplicantAddr;
+    /**国内申请人联系地址（国外）*/
+    private java.lang.String mainlandReceiverAddr;
     /**申请人地址(英文)*/
     private String applicationAddressEnglish;
 
     /**申请人国内接收人名称*/
     private String applicationMainlandRecipientname;
+
+    /**国内申请人联系地址/内地（大陆）文件接收人地址（省)*/
+    private java.lang.String dmstcApplicationAddressProvince;
+
+    private java.lang.String dmstcApplicationAddressCity;
+
+    private String dmstcApplicationAddressArea;
 
     /**国内接收人/受让人地址*/
     private String recipientAddress;
@@ -63,6 +87,8 @@ public class ShunchaoTrademarkApplicant {
     /**证明文件原件是否为中文 0否1是*/
     private String whetherOriginaldocChinese;
 
+    /**有关说明文件*/
+    private String sba0022;
     /**身份证明文件(中文)*/
     private String sba0025;
     /**身份证明原文件(外文)*/
@@ -79,6 +105,8 @@ public class ShunchaoTrademarkApplicant {
     private String sba0036;
     /**变更证明文件(英文)*/
     private String sba0037;
+    /**商标移转的有关法律文件*/
+    private String sba0038;
     /**商标代理机构PIN码*/
     private String tmsvePin;
     /*商标代理机构密码*/
@@ -92,5 +120,5 @@ public class ShunchaoTrademarkApplicant {
     /**变更标记（1：变更前，2：变更后）*/
     private String changeFlag;
     /**变更证明文件是否中文（1：是，2：否）*/
-    private String changeFileType;
+    private Integer changeFileType;
 }

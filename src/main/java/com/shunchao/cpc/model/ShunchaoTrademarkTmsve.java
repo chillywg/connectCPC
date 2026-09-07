@@ -148,7 +148,7 @@ public class ShunchaoTrademarkTmsve {
     private String sba0022;
 
     /**代理委托书 路径*/
-    private List<ShunchaoTrademarkPow> sba0023;
+    private String sba0023;
 
     /**共有人知情转让转移证明*/
     private String sba0031;
@@ -175,6 +175,9 @@ public class ShunchaoTrademarkTmsve {
     /**代理人姓名*/
     private String agentName;
 
+    /**代理机构名称*/
+    private java.lang.String enterpriseName;
+
     /**邮政编码（代理人）*/
     private String agentPostalCode;
 
@@ -190,7 +193,22 @@ public class ShunchaoTrademarkTmsve {
     /**办理业务(1：商标转让，2：商标转移)*/
     private String transferType;
 
-    /**变更类型（1：变更名义，2：变更地址，3：变更名义和地址）*/
-    private Integer changeType;
+    /**变更类型（1：变更名义，2：变更地址，3：变更联系地址，4：变更文件接收人）*/
+    private String changeType;
 
+    /**商品*/
+    List<ShunchaoTrademarkProduct> trademarkProducts;
+
+    /***
+     * 商标局Token
+     * */
+    private String tmToasToken;
+
+    /**
+     * 商标官网对应的 流水号
+     */
+    private String appFormId;
+
+    /**使用方式*/
+    private java.lang.Object designDesc;
 }

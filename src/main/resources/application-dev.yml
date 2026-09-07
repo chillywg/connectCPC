@@ -101,15 +101,15 @@ jeecg :
       invalidation: Invalidation
       notices: notices
 #connecturl: 121.36.230.204:8080/jeecg-boot
-connecturl: user.duou.com/jeecg-boot
+connecturl: user.duou.cn/jeecg-boot
 #connecturl: localhost:8080/jeecg-boot
-#connecturl: 192.168.1.106:3000/jeecg-boot
+#connecturl: 192.168.1.5:8082/jeecg-boot
 #connecturl: 192.168.1.177:8092/jeecg-boot
 #connecturl: 192.168.1.177:8089/jeecg-boot
 
 #商标网址信息
 trademark:
-  URL: https://wssq.sbj.cnipa.gov.cn:9443/tmsve/
+  URL: https://sso.cnipa.gov.cn/am/#/login
 #  PINWORD: 456123
 access_data:
   char_set: gb2312

@@ -83,14 +83,15 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
         String answer = null;
         if (trademarkAnnexList.size() > 0) {
             String exePath = System.getProperty("exe.path");
-//            String exePath = "D:\\DUOUEXE\\duou\\";
+//            exePath = "D:\\DUOUEXE\\duou\\";
             //System.out.println("加载附件到本地=====根目录：====="+exePath);
             String execute = null;
             String message = null;
             try {
                 for (ShunchaoTrademarkAnnex trademarkAnnex:trademarkAnnexList){
-                    String savePath = exePath;
-                    savePath = savePath+trademarkAnnex.getRelativePath();
+                    String relativePath =trademarkAnnex.getRelativePath();
+                    int lastIndexOf = relativePath.lastIndexOf("/");
+                    String savePath = exePath+relativePath.substring(0,lastIndexOf);
                     File file = new File(savePath);
                     if (!file.exists()) {
                         file.mkdirs();
@@ -103,7 +104,7 @@ public class IShuncaoConnectServiceImpl implements IShuncaoConnectService {
                     JSONObject j = JSON.parseObject(execute);
                     message = j.getString("message");
                     byte[] bytes = Base64Utils.decodeFromString(message);
-                    savePath = file.getPath()+File.separator+trademarkAnnex.getUploadName();
+                    savePath = exePath+trademarkAnnex.getRelativePath();
                     try {
                         FileCopyUtils.copy(bytes,new BufferedOutputStream(new FileOutputStream(new File(savePath))));
                     } catch (IOException e) {
