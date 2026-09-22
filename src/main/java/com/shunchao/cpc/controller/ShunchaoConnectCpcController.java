@@ -221,7 +221,8 @@ public class ShunchaoConnectCpcController {
 	}
 
 	@GetMapping(value = "/sendNewCase", produces = "application/jsonp; charset=utf-8")
-	public String sendNewCase(String callback, HttpServletRequest req) {
+	public String sendNewCase(String callback, HttpServletRequest req) throws InterruptedException {
+		log.info("测试打包版本1");
 		Map<String, Object> map = new HashMap<>();
 
 		List<Map<String, Object>> list = new ArrayList<>();
@@ -234,8 +235,8 @@ public class ShunchaoConnectCpcController {
 		String[] split = id.split(",");
 		List<Map<String,String>> list1 =new ArrayList<>();
 		for (String sid : split) {
-			HashMap<String, Object> resultMap = new HashMap<>();
-			HashMap<String, String> resultMap2 = new HashMap<>();
+//			HashMap<String, Object> resultMap = new HashMap<>();
+			HashMap<String, String> nextMap = new HashMap<>();
 			try {
 				long l = System.currentTimeMillis();
 
@@ -249,16 +250,22 @@ public class ShunchaoConnectCpcController {
 				String submitCaseName = object.getString("submitCaseName");
 				String taskName = object.getString("taskName");
 				String submitAgencyName = object.getString("submitAgencyName");
-				resultMap.put("caseNumber", caseNumber);
-				resultMap.put("submitApplicationNumber", submitApplicationNumber);
-				resultMap.put("submitCaseName", submitCaseName);
-				resultMap.put("taskName", taskName);
-				resultMap.put("submitAgencyName", submitAgencyName);
+//				resultMap.put("caseNumber", caseNumber);
+//				resultMap.put("submitApplicationNumber", submitApplicationNumber);
+//				resultMap.put("submitCaseName", submitCaseName);
+//				resultMap.put("taskName", taskName);
+//				resultMap.put("submitAgencyName", submitAgencyName);
 				String agencyInternalNumber = object.getString("agencyInternalNumber");
 				String electronicApplicationFileType = object.getString("electronicApplicationFileType");//0：新申请 1：中间件
-				resultMap2.put("agencyInternalNumber",agencyInternalNumber);
-				resultMap2.put("electronicApplicationFileType",electronicApplicationFileType);
-				list1.add(resultMap2);
+				nextMap.put("sid", sid);
+				nextMap.put("caseNumber", caseNumber);
+				nextMap.put("submitApplicationNumber", submitApplicationNumber);
+				nextMap.put("submitCaseName", submitCaseName);
+				nextMap.put("taskName", taskName);
+				nextMap.put("submitAgencyName", submitAgencyName);
+				nextMap.put("agencyInternalNumber",agencyInternalNumber);
+				nextMap.put("electronicApplicationFileType",electronicApplicationFileType);
+				list1.add(nextMap);
 
 				HashMap<String, Object> mapPara = new HashMap<>();
 				mapPara.put("electronicApplicationsId", sid);
@@ -281,68 +288,78 @@ public class ShunchaoConnectCpcController {
 				System.out.println(System.currentTimeMillis() - a);
 
 			} catch (Exception e) {
-				resultMap.put("status", "送案失败");
-				list.add(resultMap);
-				failNum++;
+				e.printStackTrace();
+				log.info("送案失败，" + e.getMessage());
+//				resultMap.put("status", "送案失败");
+//				list.add(resultMap);
+//				failNum++;
 
 			}
+		}
+
+		Thread.sleep(2000);
+		for(Map<String,String> mapString:list1){
+			HashMap<String, Object> resultMap = new HashMap<>();
 			try {
-				Thread.sleep(2000);
-				for(Map<String,String> mapString:list1){
-					String electronicApplicationFileType = mapString.get("electronicApplicationFileType");
-					String agencyInternalNumber = mapString.get("agencyInternalNumber");
-					//查询本地cpc是否送案成功
-					String s = "{\"anjianclzt\":\"0\",\"dianzisqajlx\":\"" + electronicApplicationFileType + "\",\"zhuanlisqh\":\"\",\"zhuanlimc\":\"\",\"dianzisqfs\":\"2\",\"yewulx\":\"\",\"dljgnbbh\":\"" + agencyInternalNumber + "\",\"size\":10,\"current\":1}";
-//                String b = "{\"anjianclzt\":\"0\",\"dianzisqajlx\":\"1\",\"zhuanlisqh\":\"\",\"zhuanlimc\":\"\",\"dianzisqfs\":\"2\",\"yewulx\":\"\",\"dljgnbbh\":\"39895865oiertrjkkj459\",\"size\":10,\"current\":1}";
-					String listUrl = "";
-					if ("0".equals(electronicApplicationFileType)) {
-						listUrl = "http://localhost:9999/ajlist/cgx/xsqlist";
-					} else {
-						listUrl = "http://localhost:9999/ajlist/cgx/zjwjlist";
-					}
-					org.jsoup.Connection.Response executeList = Jsoup.connect(listUrl)
-							.method(org.jsoup.Connection.Method.POST)
-							.header("Content-Type", "application/json;charset=UTF-8")
-							.requestBody(s)
-							.ignoreContentType(true).execute();
+				String sid = mapString.get("sid");
+				resultMap.put("caseNumber", mapString.get("caseNumber"));
+				resultMap.put("submitApplicationNumber",  mapString.get("submitApplicationNumber"));
+				resultMap.put("submitCaseName",  mapString.get("submitCaseName"));
+				resultMap.put("taskName",  mapString.get("taskName"));
+				resultMap.put("submitAgencyName",  mapString.get("submitAgencyName"));
+				String electronicApplicationFileType = mapString.get("electronicApplicationFileType");
+				String agencyInternalNumber = mapString.get("agencyInternalNumber");
+				//查询本地cpc是否送案成功
+				String s = "{\"anjianclzt\":\"0\",\"dianzisqajlx\":\"" + electronicApplicationFileType + "\",\"zhuanlisqh\":\"\",\"zhuanlimc\":\"\",\"dianzisqfs\":\"2\",\"yewulx\":\"\",\"dljgnbbh\":\"" + agencyInternalNumber + "\",\"size\":10,\"current\":1}";
+	//                String b = "{\"anjianclzt\":\"0\",\"dianzisqajlx\":\"1\",\"zhuanlisqh\":\"\",\"zhuanlimc\":\"\",\"dianzisqfs\":\"2\",\"yewulx\":\"\",\"dljgnbbh\":\"39895865oiertrjkkj459\",\"size\":10,\"current\":1}";
+				String listUrl = "";
+				if ("0".equals(electronicApplicationFileType)) {
+					listUrl = "http://localhost:9999/ajlist/cgx/xsqlist";
+				} else {
+					listUrl = "http://localhost:9999/ajlist/cgx/zjwjlist";
+				}
+				org.jsoup.Connection.Response executeList = Jsoup.connect(listUrl)
+						.method(org.jsoup.Connection.Method.POST)
+						.header("Content-Type", "application/json;charset=UTF-8")
+						.requestBody(s)
+						.ignoreContentType(true).execute();
 
-					String loginBody = executeList.body();
-					JSONObject loginJSONObject = JSONObject.parseObject(loginBody);
-					JSONObject resultList = loginJSONObject.getJSONObject("result");
-					JSONArray records = resultList.getJSONArray("records");
-					if (records.size() > 0) {//如果送案成功
-						String electronicStatus = "";
-						if (records.size() > 1) {
-							resultMap.put("status", "送案成功（重复送案）");
-							list.add(resultMap);
-							repeatedNum++;
-							electronicStatus = "1011";
-						}else {
-							successNum++;
-							electronicStatus = "1006";
-						}
-						List<String> dianzisqajbhList = new ArrayList<>();
-						for (int i = 0; i < records.size(); i++) {
-							JSONObject jsonObject1 = records.getJSONObject(i);
-							String dianzisqajbh = jsonObject1.getString("dianzisqajbh");
-							dianzisqajbhList.add(dianzisqajbh);
-						}
-
-						HashMap<String, Object> param = new HashMap<>();
-						param.put("electronicApplicationsId", sid);
-						param.put("dianzisqajbh", StringUtils.join(dianzisqajbhList, ","));
-						param.put("electronicStatus", electronicStatus);
-						HttpRequest.post(connecturl + "/electronic/patentElectronicApplications/setSentCase").
-								header("X-Access-Token", token).form(param).execute();
-					} else {//送案失败
-						resultMap.put("status", "送案失败");
+				String loginBody = executeList.body();
+				JSONObject loginJSONObject = JSONObject.parseObject(loginBody);
+				JSONObject resultList = loginJSONObject.getJSONObject("result");
+				JSONArray records = resultList.getJSONArray("records");
+				if (records.size() > 0) {//如果送案成功
+					String electronicStatus = "";
+					if (records.size() > 1) {
+						resultMap.put("status", "送案成功（重复送案）");
 						list.add(resultMap);
-						failNum++;
-						HashMap<String, Object> param = new HashMap<>();
-						param.put("electronicApplicationsId", sid);
-						HttpRequest.post(connecturl + "/electronic/patentElectronicApplications/setSentFail").
-								header("X-Access-Token", token).form(param).execute();
+						repeatedNum++;
+						electronicStatus = "1011";
+					}else {
+						successNum++;
+						electronicStatus = "1006";
 					}
+					List<String> dianzisqajbhList = new ArrayList<>();
+					for (int i = 0; i < records.size(); i++) {
+						JSONObject jsonObject1 = records.getJSONObject(i);
+						String dianzisqajbh = jsonObject1.getString("dianzisqajbh");
+						dianzisqajbhList.add(dianzisqajbh);
+					}
+
+					HashMap<String, Object> param = new HashMap<>();
+					param.put("electronicApplicationsId", sid);
+					param.put("dianzisqajbh", StringUtils.join(dianzisqajbhList, ","));
+					param.put("electronicStatus", electronicStatus);
+					HttpRequest.post(connecturl + "/electronic/patentElectronicApplications/setSentCase").
+							header("X-Access-Token", token).form(param).execute();
+				} else {//送案失败
+					resultMap.put("status", "送案失败");
+					list.add(resultMap);
+					failNum++;
+					HashMap<String, Object> param = new HashMap<>();
+					param.put("electronicApplicationsId", sid);
+					HttpRequest.post(connecturl + "/electronic/patentElectronicApplications/setSentFail").
+							header("X-Access-Token", token).form(param).execute();
 				}
 			}catch (Exception e) {
 				resultMap.put("status", "送案失败");
@@ -351,6 +368,7 @@ public class ShunchaoConnectCpcController {
 
 			}
 		}
+
 
 		map.put("list", list);
 		map.put("successNum", successNum);
@@ -365,7 +383,6 @@ public class ShunchaoConnectCpcController {
 		}
 
 	}
-
 	@GetMapping(value = "/getNoticesc", produces = "application/jsonp; charset=utf-8")
 	public String getNotices(String callback,@RequestParam(name = "token") String token, HttpServletRequest req) {
 
